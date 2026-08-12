@@ -159,7 +159,10 @@ Prefix `/admin` — role `admin` required.
 |--------|------|
 | GET | `/admin/content/review-queue` | `REVIEW_REQUIRED` cards |
 | PATCH | `/admin/content/cards/{id}/status` | `draft`/`review_required`/`published`/`archived` |
+| POST | `/admin/content/topics/{topic_id}/documents` | create source + blocks |
+| POST | `/admin/content/topics/{topic_id}/cards` | create/publish card + source refs |
 | POST | `/admin/entitlements/grants` | grant feature to user |
+| POST | `/admin/entitlements/revoke` | end entitlement |
 | GET | `/admin/analytics/overview` | users / sessions / review / sync counts |
 
 ---
