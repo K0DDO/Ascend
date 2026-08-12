@@ -1,15 +1,13 @@
 # Ascend — Project Context
 
 > Living document. Update after every phase.
-> Last updated: 2026-08-12
+> Last updated: 2026-08-12 — Phase 10 Gamification
 
 ## Current status
 
-**Phase 2 — Backend foundation: COMPLETE**
+**Phase 10 — Gamification: COMPLETE**
 
-**Phase 3 — Flutter foundation: COMPLETE** (+ Subbery-style UI polish)
-
-Next: Phase 4 Authentication.
+Next: Phase 11 AI Interview.
 
 ## Product one-liner
 
@@ -25,74 +23,76 @@ See `ARCHITECTURE.md` / `SYSTEM_PROMPT.md`.
 Ascend/
   SYSTEM_PROMPT.md
   README.md
-  Идея продукта.md
   docs/*.md
-  backend/app/<modules>/
-  mobile/lib/{core,domain,data,features,shared}/
+  backend/app/{core,auth,content,entitlements,...}/
+  mobile/lib/{core,data,features,shared}/
 ```
 
 ## Implemented features
 
 - [x] Architecture documentation set
-- [x] Repository scaffold
 - [x] Backend runnable app (`/api/v1/health`, `/api/v1/ready`)
-- [x] Alembic baseline: users, roles, user_roles
-- [x] Flutter runnable app (shell, hotbar, Home preview)
-- [ ] Auth
-- [ ] Content
-- [ ] Offline
-- [ ] Cards UI
-- [ ] SRS
-- [ ] Progress
-- [ ] Gamification
+- [x] Alembic: identity + auth + content curriculum
+- [x] Flutter shell with AscendTheme and glass hotbar
+- [x] Auth (register/login/refresh/logout, JWT, entitlements, devices)
+- [x] Mobile auth UI (welcome/login/register, demo mode, secure token storage)
+- [x] Content API (courses, topics, cards, sources, manifest stub)
+- [x] Demo seed: `demo-python` (demo_access) + `python-pro` (course_access, locked)
+- [x] Flutter Learn tab: course list with topics preview
+- [x] Offline: Drift + SQLCipher local DB, content sync, entitlement wipe on logout
+- [x] Learn tab: offline badge + pull-to-refresh
+- [x] Cards UX: TopicScreen, CardPlayer flip-анимация, Повторить/Знаю, итоговый экран
+- [x] Backend: learning_events table, POST /learning/reviews, GET /learning/topics/{id}/progress
+- [x] SRS: ascend_srs_v1 algorithm, card_memory_states, due-queue endpoint, Flutter SRS-ordered queue
+- [x] Progress: `/progress/overview`, weak areas, 14-day activity, readiness + live Progress tab UI
+- [x] Gamification: `/gamification/overview`, streak, XP, daily goal, achievements + live Progress UI section
 - [ ] AI Interview
 - [ ] Mentor
 - [ ] Admin
 
 ## Current TODO
 
-1. Phase 4: Authentication (register/login/refresh, secure storage, device registration)
-2. Then Content → Offline → Cards → SRS
+1. Phase 11: AI Interview (entitlement gate, grounded examiner, scoring)
+2. Then Mentor
 
-## Mobile quick start
+## Dev quick start
+
+```bash
+cd backend
+docker compose up -d
+alembic upgrade head
+python scripts/seed_content.py
+uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
+```
 
 ```bash
 cd mobile
 flutter pub get
-flutter run
+adb reverse tcp:8001 tcp:8001
+flutter run --release --dart-define=API_BASE_URL=http://127.0.0.1:8001
 ```
 
-```bash
-cd backend
-python -m venv .venv && .venv\Scripts\activate
-pip install -e ".[dev]"
-docker compose up -d
-alembic upgrade head
-uvicorn app.main:app --reload
-```
+Postgres runs on host port **55432** (avoids local PostgreSQL conflict).
+
+## Content endpoints (Phase 5)
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| GET | `/api/v1/courses` | Published courses; locked flag per entitlement |
+| GET | `/api/v1/courses/{id}` | Sections + topics when unlocked |
+| GET | `/api/v1/topics/{id}` | Topic detail + prerequisite ids |
+| GET | `/api/v1/topics/{id}/cards` | Published card previews |
+| GET | `/api/v1/documents/{id}` | Published source blocks |
+| GET | `/api/v1/content/manifest` | Revision manifest stub |
+| GET | `/api/v1/content/packages` | Empty stub (offline packages later) |
 
 ## Known issues
 
-- Docker Desktop was not running during setup — run `docker compose up -d` before Alembic migrations.
-- Subbery is external reference only; do not import Subbery packages.
-
-## Open product nuances (resolved for architecture)
-
-| Topic | Decision |
-|-------|----------|
-| Locked topics visibility | Show locked with upsell sheet |
-| Access expiry | Wipe local entitled content; keep server aggregates |
-| Prerequisites | Hard gate for all learning paths, not only Optimal |
-| Card multi-topic | Primary topic + optional secondary tags later; v1 = one primary topic |
-| AI required for 100% topic | When user has `ai_interview` entitlement; otherwise mastery thresholds without AI |
-| Deleted card | Soft-remove from learning; preserve course-level aggregates |
-
-## Architectural decisions
-
-See ADR table in `ARCHITECTURE.md`.
+- Docker Desktop required for Postgres (`docker compose up -d`).
+- Physical device dev uses USB + `adb reverse` (Windows Firewall blocks LAN port by default).
+- Release APK requires `INTERNET` permission in main manifest (fixed).
 
 ## Reference materials
 
 - `Идея продукта.md` — owner Q&A
 - Subbery design tokens — visual language reference
-- Owner master prompt — product + engineering requirements

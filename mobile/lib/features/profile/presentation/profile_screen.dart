@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/ascend_theme.dart';
 import '../../../core/theme/glass_effect_provider.dart';
 import '../../../core/theme/theme_mode_provider.dart';
+import '../../../core/widgets/ascend_glass_button.dart';
 import '../../../core/widgets/ascend_glass_card.dart';
+import '../../auth/application/auth_controller.dart';
 import '../../../shared/widgets/ascend_placeholder_tab.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -15,6 +17,8 @@ class ProfileScreen extends ConsumerWidget {
     final theme = context.ascendTheme;
     final mode = ref.watch(themeModeProvider);
     final glassStrength = ref.watch(glassEffectStrengthProvider);
+    final auth = ref.watch(authControllerProvider);
+    final isLoading = auth.status == AuthStatus.loading;
 
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
@@ -39,6 +43,56 @@ class ProfileScreen extends ConsumerWidget {
           ),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
+              AscendGlassCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Аккаунт', style: theme.typography.textTheme.titleMedium),
+                    SizedBox(height: theme.spacing.sm),
+                    if (auth.isGuest) ...[
+                      Text(
+                        'Демо-режим',
+                        style: theme.typography.textTheme.titleLarge,
+                      ),
+                      SizedBox(height: theme.spacing.xs),
+                      Text(
+                        'Данные не синхронизируются с сервером',
+                        style: theme.typography.textTheme.bodyMedium?.copyWith(
+                          color: theme.colors.muted,
+                        ),
+                      ),
+                    ] else if (auth.user case final user?) ...[
+                      Text(user.displayName, style: theme.typography.textTheme.titleLarge),
+                      if (user.email case final email?) ...[
+                        SizedBox(height: theme.spacing.xs),
+                        Text(
+                          email,
+                          style: theme.typography.textTheme.bodyMedium?.copyWith(
+                            color: theme.colors.muted,
+                          ),
+                        ),
+                      ],
+                    ] else
+                      Text(
+                        'Не авторизован',
+                        style: theme.typography.textTheme.bodyMedium?.copyWith(
+                          color: theme.colors.muted,
+                        ),
+                      ),
+                    if (auth.canUseApp) ...[
+                      SizedBox(height: theme.spacing.md),
+                      AscendGlassButton(
+                        label: isLoading ? 'Выход…' : 'Выйти',
+                        icon: Icons.logout_rounded,
+                        onPressed: isLoading
+                            ? null
+                            : () => ref.read(authControllerProvider.notifier).logout(),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              SizedBox(height: theme.spacing.md),
               AscendGlassCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,8 +132,8 @@ class ProfileScreen extends ConsumerWidget {
               SizedBox(height: theme.spacing.lg),
               const AscendPlaceholderTab(
                 title: '',
-                subtitle: 'Аккаунт, устройства и диагностика появятся позже.',
-                icon: Icons.person_rounded,
+                subtitle: 'Устройства и диагностика появятся позже.',
+                icon: Icons.devices_rounded,
                 compact: true,
               ),
             ]),

@@ -2,7 +2,7 @@
 
 > **Назначение:** читать этот файл ПЕРВЫМ, когда контекст чата обнулился.
 > Обновлять после каждого значимого этапа работы.
-> Последнее обновление: 2026-08-12 — UI polish (Subbery glass reference)
+> Последнее обновление: 2026-08-12 — Phase 10 Gamification
 
 ---
 
@@ -118,14 +118,14 @@ AI Interview — контекстно, не отдельная вкладка.
 | 1 | Architecture | ✅ DONE |
 | 2 | Backend foundation | ✅ DONE |
 | 3 | Flutter foundation | ✅ DONE |
-| 4 | Authentication | ⬜ next |
-| 5 | Course/content system | ⬜ |
-| 6 | Offline storage | ⬜ |
-| 7 | Cards | ⬜ |
-| 8 | SRS | ⬜ |
-| 9 | Progress | ⬜ |
-| 10 | Gamification | ⬜ |
-| 11 | AI Interview | ⬜ |
+| 4 | Authentication | ✅ DONE |
+| 5 | Course/content system | ✅ DONE |
+| 6 | Offline storage | ✅ DONE |
+| 7 | Cards UX | ✅ DONE |
+| 8 | SRS | ✅ DONE |
+| 9 | Progress | ✅ DONE |
+| 10 | Gamification | ✅ DONE |
+| 11 | AI Interview | ⬜ next |
 | 12 | Mentor | ⬜ |
 | 13 | Admin | ⬜ |
 | 14 | Sync hardening | ⬜ |

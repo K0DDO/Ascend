@@ -19,7 +19,12 @@ class AscendShell extends StatelessWidget {
         extendBody: true,
         body: Stack(
           children: [
-            Positioned.fill(child: child),
+            Positioned.fill(
+              child: SafeArea(
+                bottom: false,
+                child: child,
+              ),
+            ),
             Positioned(
               left: theme.spacing.md,
               right: theme.spacing.md,

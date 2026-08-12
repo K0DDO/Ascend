@@ -30,51 +30,64 @@ Run: `docker compose up -d && alembic upgrade head` when Docker is available.
 
 **Exit criteria:** App runs with branded shell.
 
-## Phase 4 — Authentication
+## Phase 4 — Authentication ✅
 
-- Register/login/refresh
-- Secure token storage
-- Auth gate + demo entry
-- Device registration
+- [x] Register/login/refresh
+- [x] Secure token storage
+- [x] Auth gate + demo entry
+- [x] Device registration
 
-## Phase 5 — Course / content system
+## Phase 5 — Course / content system ✅
 
-- Schema: courses, topics, dependencies, sources, cards, versions
-- Admin seed path (API or script)
-- Manifest + package download stubs
-- Published-only visibility
+- [x] Schema: courses, topics, dependencies, sources, cards, versions
+- [x] Demo seed script (`scripts/seed_content.py`)
+- [x] Manifest + package download stubs
+- [x] Published-only visibility + entitlement locks
+- [x] Flutter Learn tab with course list
 
-## Phase 6 — Offline storage
+## Phase 6 — Offline storage ✅
 
-- SQLCipher/Drift
-- Encrypted import
-- Entitlement-scoped wipe
-- Outbox table
+- [x] Drift schema: courses, topics, cards, entitlements, sync meta, outbox
+- [x] SQLCipher encrypted DB (Android/iOS); in-memory DB for tests
+- [x] ContentSyncService: network sync → local store; cache fallback
+- [x] Entitlement-scoped purge (locked course content wiped locally)
+- [x] Wipe all local content on logout / demo mode
+- [x] Learn tab offline badge + pull-to-refresh
+- [x] Unit tests: `LocalContentStore`
 
-## Phase 7 — Cards UX
+## Phase 7 — Cards UX ✅
 
-- Session player
-- Physical flip
-- Repeat / Know
-- Source reader with block highlight
-- **First polished flow with Home**
+- [x] Backend: `learning_events` table + migration 004
+- [x] Backend: `POST /learning/reviews`, `GET /learning/topics/{id}/progress`
+- [x] Flutter: TopicScreen — список карточек + прогресс-бар дня
+- [x] Flutter: CardPlayerScreen — flip-анимация (3D), Повторить / Знаю
+- [x] Flutter: итоговый экран сессии со статистикой
+- [x] Flutter: навигация Learn → Topic → Card Player (GoRouter nested routes)
+- [x] Review записывается на backend fire-and-forget (offline-resilient)
 
-## Phase 8 — SRS
+## Phase 8 — SRS ✅
 
-- `ascend_srs_v1` server + client
-- Optimal queue + prerequisites
-- Tests
+- [x] `ascend_srs_v1` server algorithm
+- [x] `card_memory_states` persistence + migration
+- [x] Due queue endpoint (`/learning/topics/{id}/queue`)
+- [x] Tests (algorithm properties and bounds)
 
-## Phase 9 — Progress
+## Phase 9 — Progress ✅
 
-- Home DTO live
-- Mastery, weak areas, activity calendar
-- Readiness indicators
+- [x] Backend DTO: `/progress/overview`
+- [x] Weak areas (topic mastery from review history)
+- [x] Activity strip (14-day review counts)
+- [x] Readiness indicator (know-rate + due-load blend)
+- [x] Flutter Progress tab connected to live backend metrics
 
-## Phase 10 — Gamification
+## Phase 10 — Gamification ✅
 
-- Streak, XP ledger, daily goal, achievements
-- Adult presentation
+- [x] Backend DTO: `/gamification/overview`
+- [x] Streak calculation from learning events
+- [x] XP totals (`know`/`repeat` weighted), including `xp_today`
+- [x] Daily goal progress
+- [x] Achievements list with unlocked/progress
+- [x] Flutter Progress tab: streak/xp/daily goal/achievements
 
 ## Phase 11 — AI Interview
 
