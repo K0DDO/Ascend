@@ -19,13 +19,14 @@
 **Exit criteria:** API boots, health green, migrations apply on empty Postgres.
 Run: `docker compose up -d && alembic upgrade head` when Docker is available.
 
-## Phase 3 — Flutter foundation
+## Phase 3 — Flutter foundation ✅
 
-- `flutter create` into `mobile/`
-- Riverpod + GoRouter shell
-- AscendTheme (colors, spacing, radius, glass, animations)
-- Floating glass hotbar + placeholder tabs
-- Light/Dark/System
+- [x] `flutter create` into `mobile/`
+- [x] Riverpod + GoRouter shell
+- [x] AscendTheme (colors, spacing, radius, glass, typography, animations)
+- [x] Floating glass hotbar + placeholder tabs
+- [x] Light/Dark/System toggle in Profile
+- [x] Home preview with glass cards
 
 **Exit criteria:** App runs with branded shell.
 

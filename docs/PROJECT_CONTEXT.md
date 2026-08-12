@@ -7,9 +7,9 @@
 
 **Phase 2 — Backend foundation: COMPLETE**
 
-FastAPI app boots with health/ready endpoints, async SQLAlchemy, Alembic baseline migration, pytest.
+**Phase 3 — Flutter foundation: COMPLETE**
 
-**Phase 3 — Flutter foundation: IN PROGRESS**
+Next: Phase 4 Authentication.
 
 ## Product one-liner
 
@@ -37,7 +37,7 @@ Ascend/
 - [x] Repository scaffold
 - [x] Backend runnable app (`/api/v1/health`, `/api/v1/ready`)
 - [x] Alembic baseline: users, roles, user_roles
-- [ ] Flutter runnable app
+- [x] Flutter runnable app (shell, hotbar, Home preview)
 - [ ] Auth
 - [ ] Content
 - [ ] Offline
@@ -51,10 +51,16 @@ Ascend/
 
 ## Current TODO
 
-1. Phase 3: Flutter foundation (`flutter create`, AscendTheme, shell/hotbar skeleton)
-2. Then Auth → Content → Offline → Cards → SRS
+1. Phase 4: Authentication (register/login/refresh, secure storage, device registration)
+2. Then Content → Offline → Cards → SRS
 
-## Backend quick start
+## Mobile quick start
+
+```bash
+cd mobile
+flutter pub get
+flutter run
+```
 
 ```bash
 cd backend
@@ -67,7 +73,7 @@ uvicorn app.main:app --reload
 
 ## Known issues
 
-- None in code (no runtime yet).
+- Docker Desktop was not running during setup — run `docker compose up -d` before Alembic migrations.
 - Subbery is external reference only; do not import Subbery packages.
 
 ## Open product nuances (resolved for architecture)

@@ -2,7 +2,7 @@
 
 > **Назначение:** читать этот файл ПЕРВЫМ, когда контекст чата обнулился.
 > Обновлять после каждого значимого этапа работы.
-> Последнее обновление: 2026-08-12 — Phase 1 Architecture complete.
+> Последнее обновление: 2026-08-12 — Phase 3 Flutter foundation complete.
 
 ---
 
@@ -115,10 +115,10 @@ AI Interview — контекстно, не отдельная вкладка.
 
 | Phase | Name | Status |
 |-------|------|--------|
-| 1 | Architecture | ✅ DONE (docs + scaffold) |
-| 2 | Backend foundation | ⬜ next |
-| 3 | Flutter foundation | ⬜ |
-| 4 | Authentication | ⬜ |
+| 1 | Architecture | ✅ DONE |
+| 2 | Backend foundation | ✅ DONE |
+| 3 | Flutter foundation | ✅ DONE |
+| 4 | Authentication | ⬜ next |
 | 5 | Course/content system | ⬜ |
 | 6 | Offline storage | ⬜ |
 | 7 | Cards | ⬜ |

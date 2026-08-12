@@ -28,7 +28,9 @@ Also: `DATABASE.md`, `API.md`, `SYNC.md`, `SRS.md`, `DESIGN_SYSTEM.md`, `SECURIT
 
 ## Status
 
-**Phase 1 — Architecture** complete. Runtime app code comes next (Phase 2 backend foundation, Phase 3 Flutter foundation).
+**Phase 3 — Flutter foundation** complete. Backend health API + mobile shell with AscendTheme and glass hotbar.
+
+Run backend: see `backend/README.md`. Run mobile: `cd mobile && flutter run`.
 
 ## License
 
