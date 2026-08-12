@@ -7,7 +7,7 @@
 
 **Phase 2 — Backend foundation: COMPLETE**
 
-**Phase 3 — Flutter foundation: COMPLETE**
+**Phase 3 — Flutter foundation: COMPLETE** (+ Subbery-style UI polish)
 
 Next: Phase 4 Authentication.
 
