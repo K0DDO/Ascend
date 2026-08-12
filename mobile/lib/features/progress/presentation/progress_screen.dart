@@ -8,8 +8,8 @@ class ProgressScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const AscendPlaceholderTab(
-      title: 'Progress',
-      subtitle: 'Mastery, retention, and readiness will live here.',
+      title: 'Прогресс',
+      subtitle: 'Mastery, retention и готовность появятся здесь.',
       icon: Icons.insights_rounded,
     );
   }

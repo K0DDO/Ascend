@@ -50,6 +50,8 @@ class AscendTheme extends ThemeExtension<AscendTheme> {
       seedColor: colors.primary,
       brightness: brightness,
       surface: colors.surface,
+      onSurface: colors.foreground,
+      onSurfaceVariant: colors.muted,
     );
 
     return ThemeData(
@@ -58,8 +60,26 @@ class AscendTheme extends ThemeExtension<AscendTheme> {
       colorScheme: scheme,
       scaffoldBackgroundColor: colors.background,
       textTheme: typography.textTheme,
+      dividerColor: colors.border.withValues(alpha: 0.35),
       splashFactory: NoSplash.splashFactory,
       highlightColor: Colors.transparent,
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Color.alphaBlend(colors.glass, colors.surface),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radius.md),
+          borderSide: BorderSide(color: colors.border.withValues(alpha: 0.35)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radius.md),
+          borderSide: BorderSide(color: colors.border.withValues(alpha: 0.28)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(radius.md),
+          borderSide: BorderSide(color: colors.primary, width: 1.5),
+        ),
+      ),
       extensions: [this],
     );
   }

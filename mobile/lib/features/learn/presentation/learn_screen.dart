@@ -8,8 +8,8 @@ class LearnScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const AscendPlaceholderTab(
-      title: 'Learn',
-      subtitle: 'Topics and optimal learning sessions will live here.',
+      title: 'Обучение',
+      subtitle: 'Темы и оптимальные сессии появятся здесь.',
       icon: Icons.school_rounded,
     );
   }

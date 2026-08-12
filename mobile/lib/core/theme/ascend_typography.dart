@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 @immutable
 class AscendTypography {
@@ -8,10 +7,11 @@ class AscendTypography {
   final TextTheme textTheme;
 
   factory AscendTypography.forBrightness(Brightness brightness) {
-    final base = GoogleFonts.plusJakartaSansTextTheme();
     final foreground = brightness == Brightness.dark
         ? const Color(0xFFFFF8F5)
         : const Color(0xFF291C1C);
+
+    final base = Typography.material2021(platform: TargetPlatform.android).black;
 
     final theme = base.copyWith(
       displayLarge: base.displayLarge?.copyWith(

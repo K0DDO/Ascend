@@ -11,27 +11,49 @@ class AscendBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = context.ascendTheme;
     final colors = theme.colors;
+    final isDark = theme.brightness == Brightness.dark;
 
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [colors.background, colors.backgroundEnd, colors.secondary],
+          colors: isDark
+              ? [colors.background, colors.backgroundEnd]
+              : [colors.background, colors.backgroundEnd, colors.backgroundAccent],
         ),
       ),
       child: Stack(
+        fit: StackFit.expand,
         children: [
           Positioned(
-            top: -80,
-            right: -40,
-            child: _GlowOrb(color: colors.glow.withValues(alpha: 0.35), size: 220),
+            top: -150,
+            right: -120,
+            child: _GlowOrb(
+              size: 360,
+              color: colors.primary,
+              opacity: isDark ? 0.23 : 0.13,
+            ),
           ),
           Positioned(
-            bottom: 120,
-            left: -60,
-            child: _GlowOrb(color: colors.primary.withValues(alpha: 0.18), size: 180),
+            bottom: -170,
+            left: -150,
+            child: _GlowOrb(
+              size: 420,
+              color: colors.secondary,
+              opacity: isDark ? 0.2 : 0.11,
+            ),
           ),
+          if (isDark)
+            Positioned(
+              top: 280,
+              left: -100,
+              child: _GlowOrb(
+                size: 280,
+                color: colors.tertiary,
+                opacity: 0.12,
+              ),
+            ),
           child,
         ],
       ),
@@ -40,20 +62,41 @@ class AscendBackground extends StatelessWidget {
 }
 
 class _GlowOrb extends StatelessWidget {
-  const _GlowOrb({required this.color, required this.size});
+  const _GlowOrb({
+    required this.size,
+    required this.color,
+    required this.opacity,
+  });
 
-  final Color color;
   final double size;
+  final Color color;
+  final double opacity;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(colors: [color, color.withValues(alpha: 0)]),
+    return IgnorePointer(
+      child: SizedBox.square(
+        dimension: size,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              colors: [
+                color.withValues(alpha: opacity),
+                color.withValues(alpha: 0),
+              ],
+            ),
+          ),
+        ),
       ),
     );
+  }
+}
+
+class AscendScrollBehavior extends ScrollBehavior {
+  const AscendScrollBehavior();
+
+  @override
+  ScrollPhysics getScrollPhysics(BuildContext context) {
+    return const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics());
   }
 }

@@ -8,8 +8,8 @@ void main() {
     await tester.pumpWidget(const ProviderScope(child: AscendApp()));
     await tester.pumpAndSettle();
 
-    expect(find.text('Good morning, Andrei'), findsOneWidget);
-    expect(find.text('Start learning'), findsOneWidget);
+    expect(find.text('Доброе утро, Андрей'), findsOneWidget);
+    expect(find.text('Начать обучение'), findsOneWidget);
     expect(find.text('Home'), findsOneWidget);
     expect(find.text('Learn'), findsOneWidget);
   });

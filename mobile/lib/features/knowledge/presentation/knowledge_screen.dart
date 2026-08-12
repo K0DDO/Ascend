@@ -8,8 +8,8 @@ class KnowledgeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const AscendPlaceholderTab(
-      title: 'Knowledge',
-      subtitle: 'Course graph and source documents will live here.',
+      title: 'База знаний',
+      subtitle: 'Граф курса и конспекты появятся здесь.',
       icon: Icons.menu_book_rounded,
     );
   }

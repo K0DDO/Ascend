@@ -8,15 +8,25 @@ class AscendPlaceholderTab extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.icon,
+    this.compact = false,
   });
 
   final String title;
   final String subtitle;
   final IconData icon;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final theme = context.ascendTheme;
+
+    if (compact) {
+      return Text(
+        subtitle,
+        style: theme.typography.textTheme.bodyLarge?.copyWith(color: theme.colors.muted),
+      );
+    }
+
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.fromLTRB(
@@ -30,8 +40,9 @@ class AscendPlaceholderTab extends StatelessWidget {
           children: [
             Icon(icon, size: 40, color: theme.colors.primary),
             SizedBox(height: theme.spacing.md),
-            Text(title, style: theme.typography.textTheme.headlineMedium),
-            SizedBox(height: theme.spacing.sm),
+            if (title.isNotEmpty)
+              Text(title, style: theme.typography.textTheme.headlineMedium),
+            if (title.isNotEmpty) SizedBox(height: theme.spacing.sm),
             Text(
               subtitle,
               style: theme.typography.textTheme.bodyLarge?.copyWith(color: theme.colors.muted),
