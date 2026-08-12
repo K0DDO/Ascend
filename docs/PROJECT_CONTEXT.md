@@ -5,10 +5,11 @@
 
 ## Current status
 
-**Phase 1 — Architecture: COMPLETE**
+**Phase 2 — Backend foundation: COMPLETE**
 
-Repository initialized as monorepo with documentation and empty module scaffolds.
-No application runtime code yet (intentional).
+FastAPI app boots with health/ready endpoints, async SQLAlchemy, Alembic baseline migration, pytest.
+
+**Phase 3 — Flutter foundation: IN PROGRESS**
 
 ## Product one-liner
 
@@ -34,7 +35,8 @@ Ascend/
 
 - [x] Architecture documentation set
 - [x] Repository scaffold
-- [ ] Backend runnable app
+- [x] Backend runnable app (`/api/v1/health`, `/api/v1/ready`)
+- [x] Alembic baseline: users, roles, user_roles
 - [ ] Flutter runnable app
 - [ ] Auth
 - [ ] Content
@@ -49,9 +51,19 @@ Ascend/
 
 ## Current TODO
 
-1. Phase 2: Backend foundation (FastAPI app, settings, DB session, health, Alembic baseline)
-2. Phase 3: Flutter foundation (`flutter create`, AscendTheme, shell/hotbar skeleton)
-3. Then Auth → Content → Offline → Cards → SRS
+1. Phase 3: Flutter foundation (`flutter create`, AscendTheme, shell/hotbar skeleton)
+2. Then Auth → Content → Offline → Cards → SRS
+
+## Backend quick start
+
+```bash
+cd backend
+python -m venv .venv && .venv\Scripts\activate
+pip install -e ".[dev]"
+docker compose up -d
+alembic upgrade head
+uvicorn app.main:app --reload
+```
 
 ## Known issues
 

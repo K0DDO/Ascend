@@ -7,16 +7,17 @@
 - [x] Monorepo scaffold
 - [x] SYSTEM_PROMPT.md
 
-## Phase 2 — Backend foundation
+## Phase 2 — Backend foundation ✅
 
-- FastAPI app skeleton, settings, logging, error handlers
-- SQLAlchemy engine/session
-- Alembic baseline (users/roles empty or minimal)
-- `GET /health`
-- pytest wiring
-- `.env.example`, README
+- [x] FastAPI app skeleton, settings, logging, error handlers
+- [x] SQLAlchemy async engine/session
+- [x] Alembic baseline (users, roles, user_roles + seed roles)
+- [x] `GET /api/v1/health`, `GET /api/v1/ready`
+- [x] pytest wiring (3 tests)
+- [x] `.env.example`, docker-compose, README
 
 **Exit criteria:** API boots, health green, migrations apply on empty Postgres.
+Run: `docker compose up -d && alembic upgrade head` when Docker is available.
 
 ## Phase 3 — Flutter foundation
 
