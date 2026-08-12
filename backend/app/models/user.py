@@ -2,11 +2,14 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, String, UniqueConstraint, func
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import DateTime, Enum, ForeignKey, String, UniqueConstraint, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+
+
+def _enum_values(enum_cls: type[enum.Enum]) -> list[str]:
+    return [member.value for member in enum_cls]
 
 
 class UserStatus(str, enum.Enum):
@@ -38,7 +41,7 @@ class User(Base, TimestampMixin):
     __tablename__ = "users"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        Uuid,
         primary_key=True,
         default=uuid.uuid4,
     )
@@ -46,7 +49,7 @@ class User(Base, TimestampMixin):
     email: Mapped[str | None] = mapped_column(String(320), unique=True, nullable=True)
     password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
     status: Mapped[UserStatus] = mapped_column(
-        Enum(UserStatus, name="user_status", native_enum=False),
+        Enum(UserStatus, name="user_status", native_enum=False, values_callable=_enum_values),
         nullable=False,
         default=UserStatus.ACTIVE,
     )
@@ -63,12 +66,12 @@ class Role(Base, TimestampMixin):
     __tablename__ = "roles"
 
     id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        Uuid,
         primary_key=True,
         default=uuid.uuid4,
     )
     name: Mapped[RoleName] = mapped_column(
-        Enum(RoleName, name="role_name", native_enum=False),
+        Enum(RoleName, name="role_name", native_enum=False, values_callable=_enum_values),
         unique=True,
         nullable=False,
     )
@@ -85,12 +88,12 @@ class UserRole(Base):
     __table_args__ = (UniqueConstraint("user_id", "role_id", name="uq_user_roles_user_role"),)
 
     user_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        Uuid,
         ForeignKey("users.id", ondelete="CASCADE"),
         primary_key=True,
     )
     role_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
+        Uuid,
         ForeignKey("roles.id", ondelete="CASCADE"),
         primary_key=True,
     )

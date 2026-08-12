@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: ascend
       POSTGRES_DB: ascend
     ports:
-      - "5432:5432"
+      - "55432:5432"
     volumes:
       - ascend_pg_data:/var/lib/postgresql/data
     healthcheck:

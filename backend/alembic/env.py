@@ -10,7 +10,18 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from app.core.config import get_settings
 from app.core.database import Base
-from app.models import Role, User, UserRole  # noqa: F401 — register metadata
+from app.models import Device, EntitlementGrant, Feature, RefreshToken, Role, User, UserRole  # noqa: F401
+from app.models.content import (  # noqa: F401
+    Card,
+    CardVersion,
+    Course,
+    CourseSection,
+    SourceBlock,
+    SourceDocument,
+    SourceVersion,
+    Topic,
+    TopicDependency,
+)
 
 config = context.config
 settings = get_settings()
