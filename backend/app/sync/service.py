@@ -15,6 +15,8 @@ from app.sync.schemas import (
     SyncDiagnosticsResponse,
     SyncEventRequest,
     SyncEventView,
+    SyncSrsStateItem,
+    SyncStateResponse,
 )
 
 
@@ -129,4 +131,55 @@ class SyncService:
             pending_estimate=pending,
             last_event_at=last_at,
             recent_failures=failures,
+        )
+
+    async def state(self, *, user_id: UUID, since: str | None = None) -> SyncStateResponse:
+        from app.auth.service import AuthService
+        from app.core.config import get_settings
+        from app.gamification.service import GamificationService
+        from app.models.content import Course, PublishStatus
+        from app.models.srs import CardMemoryState
+        from sqlalchemy import func
+
+        stmt = select(CardMemoryState).where(CardMemoryState.user_id == user_id)
+        if since:
+            try:
+                since_dt = datetime.fromisoformat(since.replace("Z", "+00:00"))
+                stmt = stmt.where(CardMemoryState.updated_at > since_dt)
+            except ValueError:
+                pass
+        rows = (await self.session.scalars(stmt.order_by(CardMemoryState.updated_at))).all()
+        cursor = rows[-1].updated_at.isoformat() if rows else (since or datetime.now(UTC).isoformat())
+
+        gamification = await GamificationService(self.session).overview(user_id)
+        content_revision = (
+            await self.session.scalar(
+                select(func.max(Course.content_revision)).where(Course.status == PublishStatus.PUBLISHED)
+            )
+            or 1
+        )
+        entitlements = await AuthService(self.session, get_settings()).get_entitlements(user_id)
+        etag = ",".join(sorted(item.key for item in entitlements.features))
+
+        return SyncStateResponse(
+            cursor=cursor,
+            srs_states=[
+                SyncSrsStateItem(
+                    card_id=row.card_id,
+                    stability=row.stability,
+                    difficulty=row.difficulty,
+                    interval_h=row.interval_h,
+                    reps=row.reps,
+                    lapses=row.lapses,
+                    due_at=row.due_at,
+                    algorithm_version=row.algorithm_version,
+                    updated_at=row.updated_at,
+                )
+                for row in rows
+            ],
+            streak_days=gamification.streak_days,
+            daily_goal_reviews=gamification.daily_goal_reviews,
+            daily_progress_reviews=gamification.daily_progress_reviews,
+            content_revision=int(content_revision),
+            entitlements_etag=etag,
         )

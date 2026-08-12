@@ -61,17 +61,27 @@ class TopicDetailResponse(BaseModel):
     card_count: int = 0
 
 
+class CardSourceRef(BaseModel):
+    document_id: UUID
+    source_version_id: UUID
+    block_id: UUID | None = None
+    document_title: str | None = None
+
+
 class CardPreview(BaseModel):
     id: UUID
     version_id: UUID
     front: dict
     back: dict
     difficulty: float
+    sources: list[CardSourceRef] = Field(default_factory=list)
 
 
 class TopicCardsResponse(BaseModel):
     topic_id: UUID
     cards: list[CardPreview]
+    locked: bool = False
+    lock_reason: str | None = None
 
 
 class SourceBlockResponse(BaseModel):
@@ -89,6 +99,11 @@ class SourceDocumentResponse(BaseModel):
     version_id: UUID
     version: int
     blocks: list[SourceBlockResponse]
+
+
+class TopicDocumentsResponse(BaseModel):
+    topic_id: UUID
+    documents: list[SourceDocumentResponse]
 
 
 class ContentManifestCourse(BaseModel):

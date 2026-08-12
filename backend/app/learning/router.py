@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
 from app.core.deps import get_current_user
+from app.core.errors import AppError
 from app.learning.schemas import DueQueueResponse, ReviewResponse, ReviewSignal, TopicProgressResponse
 from app.learning.service import LearningService
 from app.models.user import User
@@ -41,4 +42,8 @@ async def due_queue(
     user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_db_session),
 ) -> DueQueueResponse:
-    return await LearningService(session).due_queue(user.id, topic_id, limit=limit)
+    try:
+        return await LearningService(session).due_queue(user.id, topic_id, limit=limit)
+    except AppError:
+        raise
+

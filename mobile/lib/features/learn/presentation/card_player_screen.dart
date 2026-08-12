@@ -29,6 +29,7 @@ class _SessionState {
     this.done = false,
     this.questionStartedAt,
     this.answerStartedAt,
+    this.sourceOpened = false,
   });
 
   final List<CardPreview> cards;
@@ -39,6 +40,7 @@ class _SessionState {
   final bool done;
   final DateTime? questionStartedAt;
   final DateTime? answerStartedAt;
+  final bool sourceOpened;
 
   CardPreview? get currentCard => index < cards.length ? cards[index] : null;
   int get total => cards.length;
@@ -51,6 +53,7 @@ class _SessionState {
     bool? done,
     DateTime? questionStartedAt,
     DateTime? answerStartedAt,
+    bool? sourceOpened,
     bool clearAnswerStart = false,
   }) =>
       _SessionState(
@@ -62,6 +65,7 @@ class _SessionState {
         done: done ?? this.done,
         questionStartedAt: questionStartedAt ?? this.questionStartedAt,
         answerStartedAt: clearAnswerStart ? null : (answerStartedAt ?? this.answerStartedAt),
+        sourceOpened: sourceOpened ?? this.sourceOpened,
       );
 }
 
@@ -96,6 +100,7 @@ class _SessionNotifier extends StateNotifier<_SessionState> {
       result: result,
       questionMs: questionMs.clamp(0, 300000),
       answerMs: answerMs.clamp(0, 300000),
+      sourceOpened: state.sourceOpened,
     );
 
     final nextIndex = state.index + 1;
@@ -109,9 +114,14 @@ class _SessionNotifier extends StateNotifier<_SessionState> {
       done: isDone,
       questionStartedAt: isDone ? null : DateTime.now(),
       clearAnswerStart: true,
+      sourceOpened: false,
     );
 
     return signal;
+  }
+
+  void markSourceOpened() {
+    state = state.copyWith(sourceOpened: true);
   }
 }
 
@@ -195,6 +205,26 @@ class _CardPlayerScreenState extends ConsumerState<CardPlayerScreen>
 
     // Reset flip for next card
     _flipController.reset();
+  }
+
+  Future<void> _openSource(CardPreview card) async {
+    final refSource = card.sources.first;
+    ref.read(_sessionProvider.notifier).markSourceOpened();
+    try {
+      final doc = await ref.read(apiClientProvider).fetchDocument(refSource.documentId);
+      if (!mounted) return;
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        builder: (context) => _SourceSheet(document: doc, highlightBlockId: refSource.blockId),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Не удалось открыть конспект')),
+      );
+    }
   }
 
   @override
@@ -317,24 +347,39 @@ class _CardPlayerScreenState extends ConsumerState<CardPlayerScreen>
                         theme.spacing.lg,
                         theme.spacing.hotbarContentInset + theme.spacing.md,
                       ),
-                      child: Row(
+                      child: Column(
                         children: [
-                          Expanded(
-                            child: _ActionButton(
-                              label: 'Повторить',
-                              icon: Icons.replay_rounded,
-                              color: theme.colors.warning,
-                              onTap: () => _review('repeat'),
+                          if (session.currentCard?.sources.isNotEmpty == true) ...[
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: () => _openSource(session.currentCard!),
+                                icon: const Icon(Icons.menu_book_rounded),
+                                label: const Text('Подробнее'),
+                              ),
                             ),
-                          ),
-                          SizedBox(width: theme.spacing.md),
-                          Expanded(
-                            child: _ActionButton(
-                              label: 'Знаю',
-                              icon: Icons.check_rounded,
-                              color: theme.colors.success,
-                              onTap: () => _review('know'),
-                            ),
+                            SizedBox(height: theme.spacing.sm),
+                          ],
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _ActionButton(
+                                  label: 'Повторить',
+                                  icon: Icons.replay_rounded,
+                                  color: theme.colors.warning,
+                                  onTap: () => _review('repeat'),
+                                ),
+                              ),
+                              SizedBox(width: theme.spacing.md),
+                              Expanded(
+                                child: _ActionButton(
+                                  label: 'Знаю',
+                                  icon: Icons.check_rounded,
+                                  color: theme.colors.success,
+                                  onTap: () => _review('know'),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -632,6 +677,66 @@ class CardPlayerEntry extends ConsumerWidget {
         _sessionProvider.overrideWith((_) => _SessionNotifier(cards)),
       ],
       child: CardPlayerScreen(cards: cards, topic: topic),
+    );
+  }
+}
+
+class _SourceSheet extends StatelessWidget {
+  const _SourceSheet({required this.document, this.highlightBlockId});
+
+  final SourceDocument document;
+  final String? highlightBlockId;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.ascendTheme;
+    final text = theme.typography.textTheme;
+    return DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.72,
+      minChildSize: 0.4,
+      maxChildSize: 0.95,
+      builder: (context, controller) {
+        return Padding(
+          padding: EdgeInsets.fromLTRB(theme.spacing.lg, theme.spacing.md, theme.spacing.lg, theme.spacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(document.title, style: text.titleLarge),
+              SizedBox(height: theme.spacing.sm),
+              Expanded(
+                child: ListView.builder(
+                  controller: controller,
+                  itemCount: document.blocks.length,
+                  itemBuilder: (context, index) {
+                    final block = document.blocks[index];
+                    final highlighted = highlightBlockId != null && block.id == highlightBlockId;
+                    final body = block.payload['text']?.toString() ?? '';
+                    return Container(
+                      margin: EdgeInsets.only(bottom: theme.spacing.sm),
+                      padding: EdgeInsets.all(theme.spacing.sm),
+                      decoration: BoxDecoration(
+                        color: highlighted
+                            ? theme.colors.primary.withValues(alpha: 0.12)
+                            : theme.colors.surface.withValues(alpha: 0.35),
+                        borderRadius: BorderRadius.circular(theme.radius.md),
+                        border: highlighted
+                            ? Border.all(color: theme.colors.primary.withValues(alpha: 0.5))
+                            : null,
+                      ),
+                      child: Text(
+                        body,
+                        style: (block.type == 'heading' ? text.titleMedium : text.bodyMedium)
+                            ?.copyWith(fontWeight: highlighted ? FontWeight.w600 : null),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

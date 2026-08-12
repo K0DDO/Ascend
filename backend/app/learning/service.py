@@ -120,6 +120,14 @@ class LearningService:
         1. Due cards (retrievability < target, sorted by due_at asc)
         2. New cards not yet seen
         """
+        from app.content.service import ContentService
+        from app.core.config import get_settings
+        from app.core.errors import AppError
+
+        topic = await ContentService(self._session, get_settings()).get_topic(topic_id, user_id)
+        if topic.locked:
+            raise AppError("forbidden", "Topic locked by prerequisites", status_code=403)
+
         now = datetime.now(UTC)
         srs = SRSService(self._session)
 

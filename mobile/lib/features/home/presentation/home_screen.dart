@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/ascend_theme.dart';
@@ -7,23 +8,37 @@ import '../../../core/widgets/ascend_glass_card.dart';
 import '../../../core/widgets/ascend_liquid_glass.dart';
 import '../../../core/widgets/ascend_metric_row.dart';
 import '../../../core/widgets/ascend_screen_header.dart';
+import '../../auth/application/auth_controller.dart';
+import '../../progress/application/progress_provider.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = context.ascendTheme;
     final text = theme.typography.textTheme;
+    final auth = ref.watch(authControllerProvider);
+    final progressAsync = ref.watch(progressOverviewProvider);
+    final gamificationAsync = ref.watch(gamificationOverviewProvider);
+
+    final name = auth.user?.displayName.split(' ').first ?? (auth.isGuest ? 'Гость' : 'друг');
+    final progress = progressAsync.valueOrNull;
+    final gamification = gamificationAsync.valueOrNull;
+    final streak = gamification?.streakDays ?? 0;
+    final goal = gamification?.dailyGoalReviews ?? 24;
+    final done = gamification?.dailyProgressReviews ?? 0;
+    final readiness = progress?.readiness ?? 0;
+    final weakAreas = progress?.weakAreas ?? const [];
 
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
       slivers: [
         SliverToBoxAdapter(
           child: AscendScreenHeader(
-            title: 'Доброе утро, Андрей',
+            title: 'Доброе утро, $name',
             subtitle: 'Продолжай закреплять материал курса',
-            trailing: _StreakChip(days: 14),
+            trailing: _StreakChip(days: streak),
           ),
         ),
         SliverPadding(
@@ -43,7 +58,7 @@ class HomeScreen extends StatelessWidget {
                     Text('Цель на сегодня', style: text.labelLarge),
                     SizedBox(height: theme.spacing.xs),
                     Text(
-                      '24',
+                      '$done / $goal',
                       style: text.displaySmall?.copyWith(fontSize: 36, height: 1.08),
                     ),
                     Text(
@@ -62,30 +77,35 @@ class HomeScreen extends StatelessWidget {
               SizedBox(height: theme.spacing.lg),
               Text('Слабые места', style: text.titleLarge),
               SizedBox(height: theme.spacing.sm),
-              AscendMetricRow(label: 'AsyncIO', value: '61%', accent: theme.colors.error),
-              AscendMetricRow(label: 'PostgreSQL', value: '73%', accent: theme.colors.warning),
-              AscendMetricRow(label: 'Python', value: '94%', accent: theme.colors.success),
-              SizedBox(height: theme.spacing.lg),
-              Text('Прогресс по курсу', style: text.titleLarge),
-              SizedBox(height: theme.spacing.sm),
-              AscendMetricRow(label: 'Python', value: '94%', accent: theme.colors.primary),
-              AscendMetricRow(label: 'PostgreSQL', value: '73%', accent: theme.colors.primary),
-              AscendMetricRow(label: 'FastAPI', value: '61%', accent: theme.colors.primary),
+              if (weakAreas.isEmpty)
+                Text(
+                  'Пока мало данных — пройди несколько карточек.',
+                  style: text.bodyMedium?.copyWith(color: theme.colors.muted),
+                )
+              else
+                ...weakAreas.take(5).map(
+                      (area) => AscendMetricRow(
+                        label: area.topicTitle,
+                        value: '${(area.mastery * 100).round()}%',
+                        accent: area.mastery < 0.7 ? theme.colors.error : theme.colors.success,
+                      ),
+                    ),
               SizedBox(height: theme.spacing.lg),
               AscendGlassCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Следующая цель',
+                      'Готовность к Mock Interview',
                       style: text.labelLarge?.copyWith(color: theme.colors.muted),
                     ),
-                    SizedBox(height: theme.spacing.xxs),
-                    Text('Закрыть AsyncIO', style: text.titleLarge),
-                    SizedBox(height: theme.spacing.md),
-                    Text('Готовность к Mock Interview', style: text.bodyMedium),
                     SizedBox(height: theme.spacing.sm),
-                    _ReadinessBar(value: 0.82),
+                    _ReadinessBar(value: readiness),
+                    SizedBox(height: theme.spacing.xs),
+                    Text(
+                      '${(readiness * 100).round()}%',
+                      style: text.titleMedium,
+                    ),
                     SizedBox(height: theme.spacing.md),
                     AscendGlassButton(
                       label: 'Запустить AI Interview',

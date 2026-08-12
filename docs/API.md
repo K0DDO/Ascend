@@ -123,34 +123,53 @@ Duplicate `event.id` → idempotent success.
 
 ## AI Interview (entitlement `ai_interview`)
 
-| Method | Path |
-|--------|------|
-| POST | `/ai/interviews` | start |
-| POST | `/ai/interviews/{id}/answer` | |
-| POST | `/ai/interviews/{id}/complete` | |
-| GET | `/ai/interviews/{id}` | |
-| POST | `/ai/interviews/{id}/mistakes-deck` | |
+| Method | Path | Notes |
+|--------|------|-------|
+| POST | `/ai/interviews/start` | body: `topic_id`, `question_count` |
+| GET | `/ai/interviews/{id}` | session + turns + optional summary |
+| POST | `/ai/interviews/{id}/answer` | body: `answer`; returns rubric + score |
+| GET | `/ai/interviews/{id}/mistakes` | mistakes for session |
+| GET | `/ai/interviews/mistakes/deck` | user mistakes deck |
 
-Offline start → 503 / clear error.
+MVP scoring is grounded (card text overlap + rubric dimensions). Offline start → clear client blocked/error state (online-only).
 
 ---
 
 ## Mentor
 
+Requires `mentor`/`admin` role **or** entitlement `mentor_access` (except student “mine” list).
+
 | Method | Path |
 |--------|------|
+| POST | `/mentor/links` | body: `student_user_id` |
 | GET | `/mentor/students` | |
 | GET | `/mentor/students/{id}/progress` | |
 | POST | `/mentor/assignments` | |
-| POST | `/mentor/comments` | |
+| GET | `/mentor/assignments` | mentor list |
+| GET | `/mentor/assignments/mine` | student list |
+| POST | `/mentor/assignments/{id}/comments` | append mentor note |
 
 ---
 
 ## Admin
 
-Prefix `/admin` — role `admin` required. Audit-logged.
+Prefix `/admin` — role `admin` required.
 
-Users, plans, features, grants, courses, topics, dependencies, sources, cards, publish/review, AI overrides, analytics.
+| Method | Path |
+|--------|------|
+| GET | `/admin/content/review-queue` | `REVIEW_REQUIRED` cards |
+| PATCH | `/admin/content/cards/{id}/status` | `draft`/`review_required`/`published`/`archived` |
+| POST | `/admin/entitlements/grants` | grant feature to user |
+| GET | `/admin/analytics/overview` | users / sessions / review / sync counts |
+
+---
+
+## Sync
+
+| Method | Path |
+|--------|------|
+| POST | `/sync/events` | batch ingest; idempotent by `(user_id, idempotency_key)` |
+| GET | `/sync/diagnostics` | pending estimate + recent failures |
 
 ---
 

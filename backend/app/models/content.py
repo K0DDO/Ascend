@@ -262,3 +262,45 @@ class CardVersion(Base):
     )
 
     card: Mapped[Card] = relationship(back_populates="versions")
+    sources: Mapped[list["CardSourceReference"]] = relationship(
+        back_populates="card_version",
+        order_by="CardSourceReference.position",
+    )
+
+
+class CardSourceReference(Base):
+    __tablename__ = "card_source_references"
+    __table_args__ = (
+        UniqueConstraint("card_version_id", "block_id", name="uq_card_source_ref_version_block"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    card_version_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("card_versions.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    document_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("source_documents.id", ondelete="CASCADE"), nullable=False
+    )
+    source_version_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("source_versions.id", ondelete="CASCADE"), nullable=False
+    )
+    block_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("source_blocks.id", ondelete="SET NULL"), nullable=True
+    )
+    range: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+    card_version: Mapped[CardVersion] = relationship(back_populates="sources")
+
+
+class AnalyticsEvent(Base):
+    __tablename__ = "analytics_events"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    device_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    event_name: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    payload_json: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)

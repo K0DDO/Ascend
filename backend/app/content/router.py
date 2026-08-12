@@ -11,6 +11,7 @@ from app.content.schemas import (
     SourceDocumentResponse,
     TopicCardsResponse,
     TopicDetailResponse,
+    TopicDocumentsResponse,
 )
 from app.content.service import ContentService
 from app.core.config import Settings, get_settings
@@ -62,6 +63,16 @@ async def get_topic_cards(
     settings: Settings = Depends(get_settings),
 ) -> TopicCardsResponse:
     return await _service(session, settings).get_topic_cards(topic_id, user.id)
+
+
+@router.get("/topics/{topic_id}/documents", response_model=TopicDocumentsResponse)
+async def get_topic_documents(
+    topic_id: UUID,
+    user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db_session),
+    settings: Settings = Depends(get_settings),
+) -> TopicDocumentsResponse:
+    return await _service(session, settings).list_topic_documents(topic_id, user.id)
 
 
 @router.get("/documents/{document_id}", response_model=SourceDocumentResponse)

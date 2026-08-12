@@ -34,3 +34,25 @@ class SyncDiagnosticsResponse(BaseModel):
     pending_estimate: int
     last_event_at: datetime | None
     recent_failures: list[dict] = Field(default_factory=list)
+
+
+class SyncSrsStateItem(BaseModel):
+    card_id: UUID
+    stability: float
+    difficulty: float
+    interval_h: float
+    reps: int
+    lapses: int
+    due_at: datetime
+    algorithm_version: str
+    updated_at: datetime
+
+
+class SyncStateResponse(BaseModel):
+    cursor: str
+    srs_states: list[SyncSrsStateItem]
+    streak_days: int
+    daily_goal_reviews: int
+    daily_progress_reviews: int
+    content_revision: int
+    entitlements_etag: str

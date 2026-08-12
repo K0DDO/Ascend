@@ -9,8 +9,10 @@ from sqlalchemy.orm import selectinload
 from app.auth.service import AuthService
 from app.content.schemas import (
     CardPreview,
+    CardSourceRef,
     ContentManifestCourse,
     ContentManifestResponse,
+    ContentPackageSummary,
     ContentPackagesResponse,
     CourseDetailResponse,
     CourseListResponse,
@@ -20,12 +22,14 @@ from app.content.schemas import (
     SourceDocumentResponse,
     TopicCardsResponse,
     TopicDetailResponse,
+    TopicDocumentsResponse,
     TopicSummary,
 )
 from app.core.config import Settings
 from app.core.errors import AppError
 from app.models.content import (
     Card,
+    CardSourceReference,
     CardStatus,
     CardVersion,
     Course,
@@ -36,6 +40,7 @@ from app.models.content import (
     Topic,
     TopicDependency,
 )
+from app.models.learning import LearningEvent, ReviewResult
 
 
 class ContentService:
@@ -85,6 +90,8 @@ class ContentService:
             prereq_map = await self._topic_prerequisites(
                 [topic.id for section in loaded.sections for topic in section.topics]
             )
+            topic_ids = [topic.id for section in loaded.sections for topic in section.topics]
+            lock_map = await self._prereq_lock_map(user_id, topic_ids, prereq_map)
             for section in loaded.sections:
                 topics = [
                     TopicSummary(
@@ -94,7 +101,7 @@ class ContentService:
                         description=topic.description,
                         position=topic.position,
                         estimated_minutes=topic.estimated_minutes,
-                        locked=False,
+                        locked=lock_map.get(topic.id, (False, None))[0],
                         prerequisite_ids=prereq_map.get(topic.id, []),
                     )
                     for topic in section.topics
@@ -124,15 +131,19 @@ class ContentService:
         topic = await self._get_published_topic(topic_id)
         course = await self._course_for_topic(topic)
         feature_keys = await self._feature_keys(user_id)
-        locked = not self._has_access(course.access_feature_key, feature_keys)
+        course_locked = not self._has_access(course.access_feature_key, feature_keys)
         prereq_map = await self._topic_prerequisites([topic.id])
+        prereq_locked, _ = (await self._prereq_lock_map(user_id, [topic.id], prereq_map)).get(
+            topic.id, (False, None)
+        )
+        locked = course_locked or prereq_locked
         card_count = 0 if locked else await self._published_card_count(topic.id)
 
         return TopicDetailResponse(
             id=topic.id,
             slug=topic.slug,
             title=topic.title,
-            description=topic.description if not locked else None,
+            description=topic.description if not course_locked else None,
             estimated_minutes=topic.estimated_minutes,
             course_id=course.id,
             course_slug=course.slug,
@@ -148,6 +159,13 @@ class ContentService:
         if not self._has_access(course.access_feature_key, feature_keys):
             raise AppError("forbidden", "Course access required", status_code=403)
 
+        prereq_map = await self._topic_prerequisites([topic.id])
+        locked, lock_reason = (await self._prereq_lock_map(user_id, [topic.id], prereq_map)).get(
+            topic.id, (False, None)
+        )
+        if locked:
+            return TopicCardsResponse(topic_id=topic_id, cards=[], locked=True, lock_reason=lock_reason)
+
         result = await self.session.execute(
             select(Card, CardVersion)
             .join(CardVersion, CardVersion.card_id == Card.id)
@@ -159,6 +177,9 @@ class ContentService:
             )
             .order_by(Card.created_at)
         )
+        rows = result.all()
+        version_ids = [version.id for _, version in rows]
+        refs_by_version = await self._source_refs_for_versions(version_ids)
         cards = [
             CardPreview(
                 id=card.id,
@@ -166,10 +187,53 @@ class ContentService:
                 front=version.front,
                 back=version.back,
                 difficulty=float(card.difficulty),
+                sources=refs_by_version.get(version.id, []),
             )
-            for card, version in result.all()
+            for card, version in rows
         ]
-        return TopicCardsResponse(topic_id=topic_id, cards=cards)
+        return TopicCardsResponse(topic_id=topic_id, cards=cards, locked=False)
+
+    async def list_topic_documents(self, topic_id: UUID, user_id: UUID) -> TopicDocumentsResponse:
+        topic = await self._get_published_topic(topic_id)
+        course = await self._course_for_topic(topic)
+        feature_keys = await self._feature_keys(user_id)
+        if not self._has_access(course.access_feature_key, feature_keys):
+            raise AppError("forbidden", "Course access required", status_code=403)
+
+        result = await self.session.execute(
+            select(SourceDocument)
+            .options(selectinload(SourceDocument.versions).selectinload(SourceVersion.blocks))
+            .where(
+                SourceDocument.topic_id == topic_id,
+                SourceDocument.status == PublishStatus.PUBLISHED,
+            )
+            .order_by(SourceDocument.title)
+        )
+        documents: list[SourceDocumentResponse] = []
+        for document in result.scalars().all():
+            version = self._latest_published_version(document.versions)
+            if version is None:
+                continue
+            documents.append(
+                SourceDocumentResponse(
+                    id=document.id,
+                    title=document.title,
+                    topic_id=document.topic_id,
+                    version_id=version.id,
+                    version=version.version,
+                    blocks=[
+                        SourceBlockResponse(
+                            id=block.id,
+                            block_key=block.block_key,
+                            type=block.type.value,
+                            position=block.position,
+                            payload=block.payload,
+                        )
+                        for block in version.blocks
+                    ],
+                )
+            )
+        return TopicDocumentsResponse(topic_id=topic_id, documents=documents)
 
     async def get_document(self, document_id: UUID, user_id: UUID) -> SourceDocumentResponse:
         result = await self.session.execute(
@@ -235,8 +299,88 @@ class ContentService:
         return ContentManifestResponse(content_revision=max_revision, courses=entries)
 
     async def list_packages(self, *, since_revision: int | None, user_id: UUID) -> ContentPackagesResponse:
-        _ = since_revision, user_id
-        return ContentPackagesResponse(packages=[])
+        feature_keys = await self._feature_keys(user_id)
+        result = await self.session.execute(
+            select(Course).where(Course.status == PublishStatus.PUBLISHED).order_by(Course.slug)
+        )
+        packages: list[ContentPackageSummary] = []
+        for course in result.scalars().all():
+            if not self._has_access(course.access_feature_key, feature_keys):
+                continue
+            if since_revision is not None and course.content_revision <= since_revision:
+                continue
+            packages.append(
+                ContentPackageSummary(
+                    id=f"{course.slug}-r{course.content_revision}",
+                    course_id=course.id,
+                    revision=course.content_revision,
+                    size_bytes=0,
+                    checksum=self._course_hash(course),
+                )
+            )
+        return ContentPackagesResponse(packages=packages)
+
+    async def _source_refs_for_versions(self, version_ids: list[UUID]) -> dict[UUID, list[CardSourceRef]]:
+        if not version_ids:
+            return {}
+        rows = (
+            await self.session.execute(
+                select(CardSourceReference, SourceDocument.title)
+                .join(SourceDocument, SourceDocument.id == CardSourceReference.document_id)
+                .where(CardSourceReference.card_version_id.in_(version_ids))
+                .order_by(CardSourceReference.position)
+            )
+        ).all()
+        mapping: dict[UUID, list[CardSourceRef]] = {}
+        for ref, title in rows:
+            mapping.setdefault(ref.card_version_id, []).append(
+                CardSourceRef(
+                    document_id=ref.document_id,
+                    source_version_id=ref.source_version_id,
+                    block_id=ref.block_id,
+                    document_title=title,
+                )
+            )
+        return mapping
+
+    async def _topic_mastery(self, user_id: UUID, topic_id: UUID) -> float:
+        total = await self._published_card_count(topic_id)
+        if total == 0:
+            return 1.0
+        know_cards = await self.session.scalar(
+            select(func.count(func.distinct(LearningEvent.card_id)))
+            .join(Card, Card.id == LearningEvent.card_id)
+            .where(
+                LearningEvent.user_id == user_id,
+                Card.topic_id == topic_id,
+                Card.deleted_at.is_(None),
+                LearningEvent.result == ReviewResult.KNOW,
+            )
+        )
+        return float(know_cards or 0) / float(total)
+
+    async def _prereq_lock_map(
+        self,
+        user_id: UUID,
+        topic_ids: list[UUID],
+        prereq_map: dict[UUID, list[UUID]],
+    ) -> dict[UUID, tuple[bool, str | None]]:
+        result: dict[UUID, tuple[bool, str | None]] = {}
+        mastery_cache: dict[UUID, float] = {}
+        for topic_id in topic_ids:
+            prereqs = prereq_map.get(topic_id, [])
+            unmet: list[str] = []
+            for prereq_id in prereqs:
+                if prereq_id not in mastery_cache:
+                    mastery_cache[prereq_id] = await self._topic_mastery(user_id, prereq_id)
+                if mastery_cache[prereq_id] < 0.5:
+                    title = await self.session.scalar(select(Topic.title).where(Topic.id == prereq_id))
+                    unmet.append(title or str(prereq_id))
+            if unmet:
+                result[topic_id] = (True, f"Сначала закрой: {', '.join(unmet)}")
+            else:
+                result[topic_id] = (False, None)
+        return result
 
     async def _feature_keys(self, user_id: UUID) -> set[str]:
         entitlements = await AuthService(self.session, self.settings).get_entitlements(user_id)

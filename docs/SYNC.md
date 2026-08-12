@@ -39,9 +39,10 @@ Client                         Server
 ### Push: learning events
 
 - Client writes events to **outbox** immediately (local txn with SRS optimistic update).
-- When online, flush outbox in order (per device), batches of ≤100.
-- Server appends (idempotent by `event.id`), recomputes SRS for touched cards, returns deltas.
-- Client marks outbox rows `acked`, applies server SRS (server wins).
+- When online, flush outbox in order (per device), batches of ≤100; retries up to 3 on transport failure.
+- Server appends (idempotent by `idempotency_key` per user), applies supported event types (`learning.review`, `content.meta`), returns accepted/failed.
+- Client marks outbox rows `sent` / `failed`.
+- Diagnostics: `GET /sync/diagnostics` (pending estimate + recent failures).
 
 ### Pull: canonical state
 

@@ -82,3 +82,11 @@ async def test_sync_idempotent_review(client: AsyncClient) -> None:
         headers={"Authorization": f"Bearer {token}"},
     )
     assert diag.status_code == 200
+
+    state = await client.get(
+        "/api/v1/sync/state",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert state.status_code == 200
+    assert "srs_states" in state.json()
+    assert "cursor" in state.json()

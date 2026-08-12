@@ -5,10 +5,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.admin.schemas import (
     AdminAnalyticsOverview,
+    CardAdminView,
     CardModerationView,
     CardStatusUpdateRequest,
+    CreateCardRequest,
+    CreateDocumentRequest,
+    DocumentAdminView,
     EntitlementGrantRequest,
     EntitlementGrantView,
+    EntitlementRevokeRequest,
 )
 from app.admin.service import AdminService
 from app.core.database import get_db_session
@@ -36,6 +41,26 @@ async def update_card_status(
     return await AdminService(session).update_card_status(card_id, payload)
 
 
+@router.post("/content/topics/{topic_id}/documents", response_model=DocumentAdminView)
+async def create_document(
+    topic_id: UUID,
+    payload: CreateDocumentRequest,
+    _: User = Depends(require_admin),
+    session: AsyncSession = Depends(get_db_session),
+) -> DocumentAdminView:
+    return await AdminService(session).create_document(topic_id, payload)
+
+
+@router.post("/content/topics/{topic_id}/cards", response_model=CardAdminView)
+async def create_card(
+    topic_id: UUID,
+    payload: CreateCardRequest,
+    _: User = Depends(require_admin),
+    session: AsyncSession = Depends(get_db_session),
+) -> CardAdminView:
+    return await AdminService(session).create_card(topic_id, payload)
+
+
 @router.post("/entitlements/grants", response_model=EntitlementGrantView)
 async def grant_entitlement(
     payload: EntitlementGrantRequest,
@@ -45,9 +70,19 @@ async def grant_entitlement(
     return await AdminService(session).grant_entitlement(payload)
 
 
+@router.post("/entitlements/revoke", response_model=EntitlementGrantView)
+async def revoke_entitlement(
+    payload: EntitlementRevokeRequest,
+    _: User = Depends(require_admin),
+    session: AsyncSession = Depends(get_db_session),
+) -> EntitlementGrantView:
+    return await AdminService(session).revoke_entitlement(payload)
+
+
 @router.get("/analytics/overview", response_model=AdminAnalyticsOverview)
 async def analytics_overview(
     _: User = Depends(require_admin),
     session: AsyncSession = Depends(get_db_session),
 ) -> AdminAnalyticsOverview:
     return await AdminService(session).analytics_overview()
+

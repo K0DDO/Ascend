@@ -182,6 +182,7 @@ class LocalContentStore {
                   position: topic.position,
                   estimatedMinutes: topic.estimatedMinutes,
                   prerequisiteIds: (jsonDecode(topic.prerequisiteIdsJson) as List<dynamic>).cast<String>(),
+                  locked: false,
                 ),
               )
               .toList(),

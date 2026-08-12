@@ -47,11 +47,12 @@ Demo users get `demo_access` only.
 
 - Pydantic validation everywhere
 - Parameterized SQL (SQLAlchemy)
-- Rate limits on auth + AI endpoints (Redis later)
+- In-process rate limit middleware (`Settings.rate_limit_per_minute`, default 120; Redis later)
 - CORS allowlist
-- Security headers
-- Request IDs
-- Idempotency keys on event ingest
+- Security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`)
+- Request IDs (`X-Request-ID` + structured log field)
+- Idempotency keys on `/sync/events` ingest
+- Admin routes gated by `require_admin`; mentor by role or `mentor_access` entitlement
 
 ---
 
@@ -75,4 +76,4 @@ Admin audit log: actor, action, entity, before/after hashes, request_id.
 
 ## Transport
 
-TLS only in production. Certificate pinning — evaluate at production hardening phase.
+TLS only in production. Certificate pinning — deferred (evaluate before store release).

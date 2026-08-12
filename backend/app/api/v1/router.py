@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.admin.router import router as admin_router
+from app.analytics.router import router as analytics_router
 from app.api.v1 import health
 from app.ai.router import router as ai_router
 from app.auth.router import router as auth_router
@@ -24,3 +25,4 @@ api_v1_router.include_router(ai_router)
 api_v1_router.include_router(mentor_router)
 api_v1_router.include_router(admin_router)
 api_v1_router.include_router(sync_router)
+api_v1_router.include_router(analytics_router)

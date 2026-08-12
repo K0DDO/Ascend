@@ -5,9 +5,9 @@
 
 ## Current status
 
-**Phases 11–15 — COMPLETE**
+**Phases 11–15 — COMPLETE** (+ P0/P1 usability pass)
 
-Next: LLM-backed AI examiner (post-MVP), expanded admin mobile UI.
+Next: LLM AI examiner, richer admin mobile UI, sync CI torture.
 
 ## Product one-liner
 
@@ -52,11 +52,20 @@ Ascend/
 - [x] Sync hardening: idempotent `/sync/events`, outbox replay on mobile, diagnostics
 - [x] Production hardening: rate limiting, security headers, structured request logging
 
+- [x] Home live metrics (progress + gamification)
+- [x] Card source references + «Подробнее» source sheet with block highlight
+- [x] Topic prerequisite locking (mastery ≥ 50%)
+- [x] Admin content authoring: create document/card, publish, revoke entitlement
+- [x] Knowledge tab: topic documents reader
+- [x] GET `/sync/state` + analytics ingest
+- [x] Content packages listing for entitled courses
+
 ## Current TODO
 
-1. LLM examiner integration (optional upgrade to grounded MVP)
-2. Expanded admin mobile moderation UI
-3. Multi-device sync torture / conflict test suite in CI
+1. LLM examiner integration
+2. Admin mobile moderation UI
+3. Multi-device sync torture / conflict CI suite
+4. Certificate pinning / Redis rate limit
 
 ## Dev quick start
 

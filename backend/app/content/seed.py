@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.content import (
     Card,
+    CardSourceReference,
     CardStatus,
     CardVersion,
     Course,
@@ -35,6 +36,8 @@ CARD_ONE_ID = uuid.UUID("14000000-0000-4000-8000-000000000001")
 CARD_TWO_ID = uuid.UUID("14000000-0000-4000-8000-000000000002")
 CARD_VERSION_ONE_ID = uuid.UUID("14100000-0000-4000-8000-000000000001")
 CARD_VERSION_TWO_ID = uuid.UUID("14100000-0000-4000-8000-000000000002")
+BLOCK_H1_ID = uuid.UUID("13200000-0000-4000-8000-000000000001")
+BLOCK_P1_ID = uuid.UUID("13200000-0000-4000-8000-000000000002")
 NOW = datetime.now(UTC)
 
 
@@ -140,7 +143,7 @@ async def ensure_demo_content(session: AsyncSession) -> None:
     session.add_all(
         [
             SourceBlock(
-                id=uuid.uuid4(),
+                id=BLOCK_H1_ID,
                 source_version_id=DOC_VERSION_ID,
                 block_key="h1",
                 type=SourceBlockType.HEADING,
@@ -148,7 +151,7 @@ async def ensure_demo_content(session: AsyncSession) -> None:
                 payload={"text": "Что такое Python?", "level": 1},
             ),
             SourceBlock(
-                id=uuid.uuid4(),
+                id=BLOCK_P1_ID,
                 source_version_id=DOC_VERSION_ID,
                 block_key="p1",
                 type=SourceBlockType.PARAGRAPH,
@@ -192,6 +195,26 @@ async def ensure_demo_content(session: AsyncSession) -> None:
                 back={"text": "float"},
                 metadata_={},
                 published_at=NOW,
+            ),
+        ]
+    )
+    session.add_all(
+        [
+            CardSourceReference(
+                id=uuid.uuid4(),
+                card_version_id=CARD_VERSION_ONE_ID,
+                document_id=DOC_BASICS_ID,
+                source_version_id=DOC_VERSION_ID,
+                block_id=BLOCK_P1_ID,
+                position=0,
+            ),
+            CardSourceReference(
+                id=uuid.uuid4(),
+                card_version_id=CARD_VERSION_TWO_ID,
+                document_id=DOC_BASICS_ID,
+                source_version_id=DOC_VERSION_ID,
+                block_id=BLOCK_P1_ID,
+                position=0,
             ),
         ]
     )

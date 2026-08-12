@@ -162,8 +162,31 @@ class AscendApiClient {
 
   Future<List<CardPreview>> fetchTopicCards(String topicId) async {
     final response = await _dio.get('${ApiConfig.apiPrefix}/topics/$topicId/cards');
-    final cards = (response.data as Map<String, dynamic>)['cards'] as List<dynamic>? ?? const [];
+    final data = response.data as Map<String, dynamic>;
+    if (data['locked'] == true) {
+      throw ApiException(data['lock_reason'] as String? ?? 'Тема закрыта prerequisites.');
+    }
+    final cards = data['cards'] as List<dynamic>? ?? const [];
     return cards.map((item) => CardPreview.fromJson(item as Map<String, dynamic>)).toList();
+  }
+
+  Future<SourceDocument> fetchDocument(String documentId) async {
+    final response = await _dio.get('${ApiConfig.apiPrefix}/documents/$documentId');
+    return SourceDocument.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<List<SourceDocument>> fetchTopicDocuments(String topicId) async {
+    final response = await _dio.get('${ApiConfig.apiPrefix}/topics/$topicId/documents');
+    final docs = (response.data as Map<String, dynamic>)['documents'] as List<dynamic>? ?? const [];
+    return docs.map((item) => SourceDocument.fromJson(item as Map<String, dynamic>)).toList();
+  }
+
+  Future<Map<String, dynamic>> fetchSyncState({String? since}) async {
+    final response = await _dio.get(
+      '${ApiConfig.apiPrefix}/sync/state',
+      queryParameters: since == null ? null : {'since': since},
+    );
+    return response.data as Map<String, dynamic>;
   }
 
   Future<ReviewResult> recordReview(ReviewSignal signal) async {

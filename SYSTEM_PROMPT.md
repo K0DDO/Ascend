@@ -2,7 +2,7 @@
 
 > **Назначение:** читать этот файл ПЕРВЫМ, когда контекст чата обнулился.
 > Обновлять после каждого значимого этапа работы.
-> Последнее обновление: 2026-08-12 — Phase 10 Gamification
+> Последнее обновление: 2026-08-12 — Phases 11–15 (AI / Mentor / Admin / Sync / Prod)
 
 ---
 
@@ -51,7 +51,7 @@ Reference design (visual language only, не копировать классы):
 - **PostgreSQL** + **SQLAlchemy 2.x** + **Alembic**
 - **Pydantic v2**
 - **Redis** — later (rate limit, jobs, token denylist)
-- **Arq** — later (AI jobs); не добавлять до Phase 11
+- **Arq** — later (LLM AI jobs); Phase 11 MVP = grounded scoring without Arq
 - JWT access + refresh tokens
 - Entitlements/permissions (НЕ hardcode `if plan == ...`)
 
@@ -125,11 +125,13 @@ AI Interview — контекстно, не отдельная вкладка.
 | 8 | SRS | ✅ DONE |
 | 9 | Progress | ✅ DONE |
 | 10 | Gamification | ✅ DONE |
-| 11 | AI Interview | ⬜ next |
-| 12 | Mentor | ⬜ |
-| 13 | Admin | ⬜ |
-| 14 | Sync hardening | ⬜ |
-| 15 | Production hardening | ⬜ |
+| 11 | AI Interview | ✅ DONE (MVP grounded: rubric + mistakes + entitlement UX) |
+| 12 | Mentor | ✅ DONE (links / progress / assignments + student UI) |
+| 13 | Admin | ✅ DONE (review queue / grants / analytics APIs) |
+| 14 | Sync hardening | ✅ DONE (idempotent events + mobile outbox flush) |
+| 15 | Production hardening | ✅ DONE (rate limit + security headers + docs) |
+
+**Next (post Phase 15):** LLM examiner (optional Arq), richer admin/mentor mobile UI, multi-device sync torture tests in CI.
 
 **First polished UI after foundation:** Home (glass + hotbar) → Learning card flip flow.
 
@@ -154,6 +156,10 @@ AI Interview — контекстно, не отдельная вкладка.
 - OAuth providers: email/password first; Google/Apple/Telegram linking — Phase 4+.
 - Career / salary board / leagues — архитектурно заложены, UI позже.
 - Telegram bot — out of mobile MVP; analytics hooks в backend.
+- AI Interview: MVP is deterministic grounded scoring; full LLM examiner + Arq jobs still TBD.
+- Admin mobile moderation UI is minimal/placeholder; APIs are primary.
+- Certificate pinning decision deferred; rate limit is in-process (Redis later).
+- Pre-existing: `test_ready_without_database` can fail against real DB in local env.
 
 ---
 
@@ -162,7 +168,7 @@ AI Interview — контекстно, не отдельная вкладка.
 ```
 1. Прочитай SYSTEM_PROMPT.md
 2. Прочитай docs/PROJECT_CONTEXT.md
-3. Прочитай docs/IMPLEMENTATION_PLAN.md — текущая фаза
+3. Прочитай docs/IMPLEMENTATION_PLAN.md — текущая фаза / next gaps
 4. git status / git log -5
-5. Продолжай с незавершённой фазы
+5. Продолжай с next gaps (LLM examiner, admin mobile UI, sync CI torture)
 ```

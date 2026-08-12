@@ -201,38 +201,38 @@ Append-only XP grants with `reason` enum.
 
 ---
 
-## AI interview
+## AI interview (MVP)
 
-### ai_interviews
-`user_id`, `topic_id` null for broad, `status`, scores jsonb, `started_at`, `ended_at`.
+### ai_interview_sessions
+`user_id`, `topic_id`, `status` (`in_progress`/`completed`), `current_index`, `score`, `rubric_json`.
 
-### ai_interview_questions
-Question text, expected concept ids, `invalidated_by_admin` bool.
+### ai_interview_turns
+`session_id`, `turn_index`, `card_id`, `question`, `reference_answer`, `user_answer`, `score`, `feedback`, `rubric_json`
+(dimensions: clarity / correctness / completeness / terminology).
 
-### ai_interview_answers
-User answer, hints_used, timings.
+### ai_mistake_items
+Per weak turn: `user_id`, `session_id`, `turn_id`, `card_id`, `topic_id`, `prompt`, `expected_hint`, `user_answer`, `score`.
 
-### ai_interview_evaluations
-Knowledge / completeness / accuracy / independence.
-
-### ai_interview_overrides
-Admin exclude question → recompute.
-
-### weak_concepts
-From interview → feeds MistakeDeck.
+LLM question bank / admin overrides — later.
 
 ---
 
 ## Mentor
 
-### mentor_students
-M2M with active flag.
+### mentor_links
+`mentor_user_id`, `student_user_id`, `status` (`active`), unique pair.
 
-### mentor_comments
-### learning_assignments
-Assigned cards/topics/goals with due dates.
+### mentor_assignments
+`mentor_user_id`, `student_user_id`, optional `topic_id`, `title`, `note` (comments appended), `due_at`, `status`.
 
 Mentors **cannot** mutate global content.
+
+---
+
+## Sync
+
+### sync_events
+`user_id`, `device_id`, `event_type`, `idempotency_key` (unique per user), `payload_json`, `status`.
 
 ---
 

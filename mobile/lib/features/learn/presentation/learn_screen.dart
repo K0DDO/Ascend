@@ -199,21 +199,32 @@ class _TopicPreview extends ConsumerWidget {
                 padding: EdgeInsets.only(bottom: theme.spacing.xs),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(theme.radius.sm),
-                  onTap: () => context.push(
-                    '/learn/topic/${topic.id}',
-                    extra: topic,
-                  ),
+                  onTap: topic.locked
+                      ? null
+                      : () => context.push(
+                            '/learn/topic/${topic.id}',
+                            extra: topic,
+                          ),
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 4),
                     child: Row(
                       children: [
-                        Icon(Icons.play_circle_outline_rounded, size: 18, color: theme.colors.primary),
+                        Icon(
+                          topic.locked ? Icons.lock_outline_rounded : Icons.play_circle_outline_rounded,
+                          size: 18,
+                          color: topic.locked ? theme.colors.muted : theme.colors.primary,
+                        ),
                         SizedBox(width: theme.spacing.xs),
                         Expanded(
-                          child: Text(topic.title, style: theme.typography.textTheme.bodyMedium),
+                          child: Text(
+                            topic.title,
+                            style: theme.typography.textTheme.bodyMedium?.copyWith(
+                              color: topic.locked ? theme.colors.muted : null,
+                            ),
+                          ),
                         ),
                         Text(
-                          '${topic.estimatedMinutes} мин',
+                          topic.locked ? 'закрыто' : '${topic.estimatedMinutes} мин',
                           style: theme.typography.textTheme.bodySmall?.copyWith(color: theme.colors.muted),
                         ),
                         SizedBox(width: theme.spacing.xs),

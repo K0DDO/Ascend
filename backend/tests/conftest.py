@@ -16,6 +16,7 @@ from app.models import srs as _srs_models  # noqa: F401
 from app.models import ai as _ai_models  # noqa: F401
 from app.models import mentor as _mentor_models  # noqa: F401
 from app.models import sync as _sync_models  # noqa: F401
+# CardSourceReference / AnalyticsEvent live in content models
 from app.models.user import Role, RoleName, UserRole
 
 STUDENT_ROLE_ID = uuid.UUID("00000000-0000-4000-8000-000000000003")

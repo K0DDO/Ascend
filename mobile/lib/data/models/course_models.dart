@@ -55,6 +55,7 @@ class TopicSummary {
     required this.position,
     required this.estimatedMinutes,
     required this.prerequisiteIds,
+    this.locked = false,
   });
 
   final String id;
@@ -64,6 +65,7 @@ class TopicSummary {
   final int position;
   final int estimatedMinutes;
   final List<String> prerequisiteIds;
+  final bool locked;
 
   factory TopicSummary.fromJson(Map<String, dynamic> json) {
     return TopicSummary(
@@ -74,6 +76,7 @@ class TopicSummary {
       position: json['position'] as int? ?? 0,
       estimatedMinutes: json['estimated_minutes'] as int? ?? 0,
       prerequisiteIds: (json['prerequisite_ids'] as List<dynamic>? ?? const []).cast<String>(),
+      locked: json['locked'] as bool? ?? false,
     );
   }
 }
@@ -129,6 +132,27 @@ class CourseDetail {
   }
 }
 
+class CardSourceRef {
+  const CardSourceRef({
+    required this.documentId,
+    required this.sourceVersionId,
+    this.blockId,
+    this.documentTitle,
+  });
+
+  final String documentId;
+  final String sourceVersionId;
+  final String? blockId;
+  final String? documentTitle;
+
+  factory CardSourceRef.fromJson(Map<String, dynamic> json) => CardSourceRef(
+        documentId: json['document_id'] as String,
+        sourceVersionId: json['source_version_id'] as String,
+        blockId: json['block_id'] as String?,
+        documentTitle: json['document_title'] as String?,
+      );
+}
+
 class CardPreview {
   const CardPreview({
     required this.id,
@@ -136,6 +160,7 @@ class CardPreview {
     required this.front,
     required this.back,
     required this.difficulty,
+    this.sources = const [],
   });
 
   final String id;
@@ -143,6 +168,7 @@ class CardPreview {
   final Map<String, dynamic> front;
   final Map<String, dynamic> back;
   final double difficulty;
+  final List<CardSourceRef> sources;
 
   factory CardPreview.fromJson(Map<String, dynamic> json) {
     return CardPreview(
@@ -151,6 +177,62 @@ class CardPreview {
       front: json['front'] as Map<String, dynamic>? ?? const {},
       back: json['back'] as Map<String, dynamic>? ?? const {},
       difficulty: (json['difficulty'] as num?)?.toDouble() ?? 0.5,
+      sources: ((json['sources'] as List<dynamic>?) ?? const [])
+          .map((e) => CardSourceRef.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
+}
+
+class SourceBlock {
+  const SourceBlock({
+    required this.id,
+    required this.blockKey,
+    required this.type,
+    required this.position,
+    required this.payload,
+  });
+
+  final String id;
+  final String blockKey;
+  final String type;
+  final int position;
+  final Map<String, dynamic> payload;
+
+  factory SourceBlock.fromJson(Map<String, dynamic> json) => SourceBlock(
+        id: json['id'] as String,
+        blockKey: json['block_key'] as String? ?? '',
+        type: json['type'] as String? ?? 'paragraph',
+        position: json['position'] as int? ?? 0,
+        payload: json['payload'] as Map<String, dynamic>? ?? const {},
+      );
+}
+
+class SourceDocument {
+  const SourceDocument({
+    required this.id,
+    required this.title,
+    required this.topicId,
+    required this.versionId,
+    required this.version,
+    required this.blocks,
+  });
+
+  final String id;
+  final String title;
+  final String topicId;
+  final String versionId;
+  final int version;
+  final List<SourceBlock> blocks;
+
+  factory SourceDocument.fromJson(Map<String, dynamic> json) => SourceDocument(
+        id: json['id'] as String,
+        title: json['title'] as String? ?? '',
+        topicId: json['topic_id'] as String,
+        versionId: json['version_id'] as String,
+        version: json['version'] as int? ?? 1,
+        blocks: ((json['blocks'] as List<dynamic>?) ?? const [])
+            .map((e) => SourceBlock.fromJson(e as Map<String, dynamic>))
+            .toList(),
+      );
 }

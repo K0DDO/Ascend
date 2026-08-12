@@ -76,22 +76,28 @@ class TopicScreen extends ConsumerWidget {
             error: (e, _) => SliverFillRemaining(
               hasScrollBody: false,
               child: Center(
-                child: Text(
-                  'Не удалось загрузить карточки.',
-                  style: theme.typography.textTheme.bodyLarge
-                      ?.copyWith(color: theme.colors.error),
+                child: Padding(
+                  padding: EdgeInsets.all(theme.spacing.lg),
+                  child: Text(
+                    '$e',
+                    style: theme.typography.textTheme.bodyLarge
+                        ?.copyWith(color: theme.colors.error),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
             ),
             data: (cards) {
-              if (cards.isEmpty) {
+              if (topic.locked || cards.isEmpty) {
                 return SliverFillRemaining(
                   hasScrollBody: false,
                   child: Center(
                     child: Padding(
                       padding: EdgeInsets.all(theme.spacing.lg),
                       child: Text(
-                        'Карточки ещё не добавлены в эту тему.',
+                        topic.locked
+                            ? 'Тема закрыта. Сначала закрой prerequisites.'
+                            : 'Карточки ещё не добавлены в эту тему.',
                         style: theme.typography.textTheme.bodyLarge
                             ?.copyWith(color: theme.colors.muted),
                         textAlign: TextAlign.center,
