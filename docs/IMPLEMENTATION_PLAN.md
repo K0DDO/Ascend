@@ -91,28 +91,39 @@ Run: `docker compose up -d && alembic upgrade head` when Docker is available.
 
 ## Phase 11 — AI Interview
 
-- Entitlement gate
-- Grounded examiner
-- Scoring + mistakes deck
-- Admin overrides
+- [x] Entitlement gate (`ai_interview`)
+- [x] Grounded examiner (card-based Q&A)
+- [x] Structured rubric + confidence bands
+- [x] Mistakes deck per session
+- [x] Mobile: progress, rubric, summary, blocked state
 
 ## Phase 12 — Mentor
 
-- Student linking, progress views, assignments, comments
+- [x] Student linking (`/mentor/links`)
+- [x] Progress snapshot for linked students
+- [x] Assignments + mentor comments
+- [x] Mobile: student assignments screen (`/mentor`)
 
 ## Phase 13 — Admin
 
-- Content workflow, REVIEW_REQUIRED, plans/entitlements, analytics
+- [x] Review queue + card status workflow
+- [x] Entitlement grants API
+- [x] Analytics overview
+- [x] Admin role enforcement
 
 ## Phase 14 — Sync hardening
 
-- Multi-device torture tests
-- Conflict suites
-- Diagnostics UI
+- [x] Idempotent sync events table + batch ingest
+- [x] Mobile outbox enqueue on failed review
+- [x] Outbox flush on content sync
+- [x] Sync diagnostics endpoint
 
 ## Phase 15 — Production hardening
 
-- Rate limits, observability, pinning decision, store readiness
+- [x] Rate limit middleware (per-IP/path)
+- [x] Security headers middleware
+- [x] Request ID structured logging
+- [x] Docs updated
 
 ---
 

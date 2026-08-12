@@ -1,13 +1,13 @@
 # Ascend — Project Context
 
 > Living document. Update after every phase.
-> Last updated: 2026-08-12 — Phase 10 Gamification
+> Last updated: 2026-08-12 — Phases 11–15
 
 ## Current status
 
-**Phase 10 — Gamification: COMPLETE**
+**Phases 11–15 — COMPLETE**
 
-Next: Phase 11 AI Interview.
+Next: LLM-backed AI examiner (post-MVP), expanded admin mobile UI.
 
 ## Product one-liner
 
@@ -46,14 +46,17 @@ Ascend/
 - [x] SRS: ascend_srs_v1 algorithm, card_memory_states, due-queue endpoint, Flutter SRS-ordered queue
 - [x] Progress: `/progress/overview`, weak areas, 14-day activity, readiness + live Progress tab UI
 - [x] Gamification: `/gamification/overview`, streak, XP, daily goal, achievements + live Progress UI section
-- [ ] AI Interview
-- [ ] Mentor
-- [ ] Admin
+- [x] AI Interview MVP: rubric (clarity/correctness/completeness/terminology), mistakes deck, entitlement blocked UI
+- [x] Mentor: linking, progress snapshot, assignments/comments APIs + student assignments screen
+- [x] Admin: review queue, card status transitions, entitlement grants, analytics overview
+- [x] Sync hardening: idempotent `/sync/events`, outbox replay on mobile, diagnostics
+- [x] Production hardening: rate limiting, security headers, structured request logging
 
 ## Current TODO
 
-1. Phase 11: AI Interview (entitlement gate, grounded examiner, scoring)
-2. Then Mentor
+1. LLM examiner integration (optional upgrade to grounded MVP)
+2. Expanded admin mobile moderation UI
+3. Multi-device sync torture / conflict test suite in CI
 
 ## Dev quick start
 

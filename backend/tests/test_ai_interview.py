@@ -40,11 +40,23 @@ async def _first_available_topic_id(client: AsyncClient, token: str) -> str:
     raise AssertionError("No available topic found for interview tests")
 
 
+async def _grant_ai(session: AsyncSession, user_id: UUID) -> None:
+    session.add(
+        EntitlementGrant(
+            user_id=user_id,
+            feature_key="ai_interview",
+            source="test",
+            constraints={},
+            starts_at=datetime.now(UTC),
+        )
+    )
+    await session.commit()
+
+
 @pytest.mark.asyncio
 async def test_ai_interview_requires_entitlement(client: AsyncClient) -> None:
     reg = await _register(client, "ai-lock@example.com")
     token = reg["tokens"]["access_token"]
-
     topic_id = await _first_available_topic_id(client, token)
 
     start = await client.post(
@@ -60,17 +72,7 @@ async def test_ai_interview_start_answer_flow(client: AsyncClient, session: Asyn
     reg = await _register(client, "ai-open@example.com")
     token = reg["tokens"]["access_token"]
     user_id = UUID(reg["user"]["id"])
-
-    session.add(
-        EntitlementGrant(
-            user_id=user_id,
-            feature_key="ai_interview",
-            source="test",
-            constraints={},
-            starts_at=datetime.now(UTC),
-        )
-    )
-    await session.commit()
+    await _grant_ai(session, user_id)
 
     topic_id = await _first_available_topic_id(client, token)
 
@@ -100,3 +102,41 @@ async def test_ai_interview_start_answer_flow(client: AsyncClient, session: Asyn
     )
     assert fetched.status_code == 200
     assert fetched.json()["session_id"] == session_id
+
+
+@pytest.mark.asyncio
+async def test_ai_interview_rubric_and_mistakes(client: AsyncClient, session: AsyncSession) -> None:
+    reg = await _register(client, "ai-rubric@example.com")
+    token = reg["tokens"]["access_token"]
+    user_id = UUID(reg["user"]["id"])
+    await _grant_ai(session, user_id)
+
+    topic_id = await _first_available_topic_id(client, token)
+    start = await client.post(
+        "/api/v1/ai/interviews/start",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"topic_id": topic_id, "question_count": 1},
+    )
+    assert start.status_code == 200
+    session_id = start.json()["session_id"]
+
+    answer = await client.post(
+        f"/api/v1/ai/interviews/{session_id}/answer",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"answer": "x"},
+    )
+    assert answer.status_code == 200
+    body = answer.json()
+    assert body["status"] == "completed"
+    assert body["summary"] is not None
+    assert body["summary"]["confidence_band"] in {"low", "medium", "high"}
+    turn = body["turns"][0]
+    assert turn["rubric"] is not None
+    assert "clarity" in turn["rubric"]
+
+    mistakes = await client.get(
+        f"/api/v1/ai/interviews/{session_id}/mistakes",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert mistakes.status_code == 200
+    assert len(mistakes.json()["items"]) >= 1

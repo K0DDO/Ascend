@@ -9,6 +9,7 @@ import '../../features/auth/presentation/welcome_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/knowledge/presentation/ai_interview_screen.dart';
 import '../../features/knowledge/presentation/knowledge_screen.dart';
+import '../../features/mentor/presentation/mentor_screen.dart';
 import '../../features/learn/presentation/card_player_screen.dart';
 import '../../features/learn/presentation/learn_screen.dart';
 import '../../features/learn/presentation/topic_screen.dart';
@@ -120,6 +121,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: '/knowledge',
             pageBuilder: (context, state) =>
                 const NoTransitionPage(child: KnowledgeScreen()),
+          ),
+          GoRoute(
+            path: '/mentor',
+            builder: (context, state) => const MentorScreen(),
           ),
           GoRoute(
             path: '/ai-interview',

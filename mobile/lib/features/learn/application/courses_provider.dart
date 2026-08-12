@@ -7,7 +7,8 @@ import '../../sync/application/content_sync_service.dart';
 final contentSyncServiceProvider = FutureProvider<ContentSyncService>((ref) async {
   final store = await ref.watch(localContentStoreProvider.future);
   final api = ref.watch(apiClientProvider);
-  return ContentSyncService(api, store);
+  final deviceInfo = ref.watch(deviceInfoProvider);
+  return ContentSyncService(api, store, deviceInfo);
 });
 
 final coursesProvider = FutureProvider<CoursesSnapshot>((ref) async {

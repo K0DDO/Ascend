@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_client.dart';
+import '../../../data/local/database_provider.dart';
 import '../../../core/theme/ascend_theme.dart';
 import '../../../core/widgets/ascend_glass_card.dart';
 import '../../../data/models/course_models.dart';
@@ -181,7 +182,14 @@ class _CardPlayerScreenState extends ConsumerState<CardPlayerScreen>
     // Fire-and-forget to backend (offline resilient)
     if (signal != null) {
       unawaited(
-        ref.read(apiClientProvider).recordReview(signal).catchError((_) => ReviewResult.fromJson({'event_id': '', 'card_id': '', 'result': 'know'})),
+        ref.read(apiClientProvider).recordReview(signal).catchError((_) async {
+          final store = await ref.read(localContentStoreProvider.future);
+          await store.enqueueOutbox(
+            eventType: 'learning.review',
+            payload: signal.toJson(),
+          );
+          return ReviewResult.fromJson({'event_id': '', 'card_id': signal.cardId, 'result': signal.result});
+        }),
       );
     }
 

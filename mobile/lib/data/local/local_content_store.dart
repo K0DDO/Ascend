@@ -223,4 +223,50 @@ class LocalContentStore {
         .getSingle();
     return count.read(_db.outboxEvents.id.count()) ?? 0;
   }
+
+  Future<void> enqueueOutbox({
+    required String eventType,
+    required Map<String, dynamic> payload,
+  }) async {
+    final id = DateTime.now().microsecondsSinceEpoch.toString();
+    await _db.into(_db.outboxEvents).insert(
+          OutboxEventsCompanion.insert(
+            id: id,
+            eventType: eventType,
+            payloadJson: jsonEncode(payload),
+            status: const Value('pending'),
+          ),
+        );
+  }
+
+  Future<List<({String id, String eventType, Map<String, dynamic> payload})>> readPendingOutbox({
+    int limit = 25,
+  }) async {
+    final rows = await (_db.select(_db.outboxEvents)
+          ..where((e) => e.status.equals('pending'))
+          ..orderBy([(e) => OrderingTerm.asc(e.createdAt)])
+          ..limit(limit))
+        .get();
+    return rows
+        .map(
+          (row) => (
+            id: row.id,
+            eventType: row.eventType,
+            payload: jsonDecode(row.payloadJson) as Map<String, dynamic>,
+          ),
+        )
+        .toList();
+  }
+
+  Future<void> markOutboxSent(String id) async {
+    await (_db.update(_db.outboxEvents)..where((e) => e.id.equals(id))).write(
+      const OutboxEventsCompanion(status: Value('sent')),
+    );
+  }
+
+  Future<void> markOutboxFailed(String id) async {
+    await (_db.update(_db.outboxEvents)..where((e) => e.id.equals(id))).write(
+      const OutboxEventsCompanion(status: Value('failed')),
+    );
+  }
 }

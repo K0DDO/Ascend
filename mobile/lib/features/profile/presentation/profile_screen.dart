@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:go_router/go_router.dart';
+
 import '../../../core/theme/ascend_theme.dart';
 import '../../../core/theme/glass_effect_provider.dart';
 import '../../../core/theme/theme_mode_provider.dart';
@@ -125,6 +127,21 @@ class ProfileScreen extends ConsumerWidget {
                       onChanged: (value) {
                         ref.read(glassEffectStrengthProvider.notifier).state = value;
                       },
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: theme.spacing.md),
+              AscendGlassCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Ментор', style: theme.typography.textTheme.titleMedium),
+                    SizedBox(height: theme.spacing.sm),
+                    AscendGlassButton(
+                      label: 'Мои задания',
+                      icon: Icons.school_rounded,
+                      onPressed: () => context.push('/mentor'),
                     ),
                   ],
                 ),

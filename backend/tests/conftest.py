@@ -14,9 +14,13 @@ from app.models import content as _content_models  # noqa: F401
 from app.models import learning as _learning_models  # noqa: F401
 from app.models import srs as _srs_models  # noqa: F401
 from app.models import ai as _ai_models  # noqa: F401
-from app.models.user import Role, RoleName
+from app.models import mentor as _mentor_models  # noqa: F401
+from app.models import sync as _sync_models  # noqa: F401
+from app.models.user import Role, RoleName, UserRole
 
 STUDENT_ROLE_ID = uuid.UUID("00000000-0000-4000-8000-000000000003")
+MENTOR_ROLE_ID = uuid.UUID("00000000-0000-4000-8000-000000000002")
+ADMIN_ROLE_ID = uuid.UUID("00000000-0000-4000-8000-000000000001")
 
 
 @pytest.fixture
@@ -37,12 +41,12 @@ async def session(settings: Settings):
         await conn.run_sync(Base.metadata.create_all)
 
     async with session_factory() as db:
-        db.add(
-            Role(
-                id=STUDENT_ROLE_ID,
-                name=RoleName.STUDENT,
-                description="Learner account",
-            )
+        db.add_all(
+            [
+                Role(id=ADMIN_ROLE_ID, name=RoleName.ADMIN, description="Platform administrator"),
+                Role(id=MENTOR_ROLE_ID, name=RoleName.MENTOR, description="Mentor account"),
+                Role(id=STUDENT_ROLE_ID, name=RoleName.STUDENT, description="Learner account"),
+            ]
         )
         await db.commit()
         await ensure_default_features(db)

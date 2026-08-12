@@ -222,6 +222,32 @@ class AscendApiClient {
     return InterviewSession.fromJson(response.data as Map<String, dynamic>);
   }
 
+  Future<List<MistakeItem>> fetchInterviewMistakes({required String sessionId}) async {
+    final response = await _dio.get('${ApiConfig.apiPrefix}/ai/interviews/$sessionId/mistakes');
+    final items = (response.data as Map<String, dynamic>)['items'] as List<dynamic>? ?? const [];
+    return items.map((item) => MistakeItem.fromJson(item as Map<String, dynamic>)).toList();
+  }
+
+  Future<List<Map<String, dynamic>>> fetchMyAssignments() async {
+    final response = await _dio.get('${ApiConfig.apiPrefix}/mentor/assignments/mine');
+    final data = response.data as List<dynamic>? ?? const [];
+    return data.cast<Map<String, dynamic>>();
+  }
+
+  Future<Map<String, dynamic>> syncEvents({
+    required String deviceId,
+    required List<Map<String, dynamic>> events,
+  }) async {
+    final response = await _dio.post(
+      '${ApiConfig.apiPrefix}/sync/events',
+      data: {
+        'device_id': deviceId,
+        'events': events,
+      },
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
   Future<AuthResult> _parseAuthResponse(Response<dynamic> response) async {
     final result = AuthResult.fromJson(response.data as Map<String, dynamic>);
     await _tokenStorage.saveTokens(

@@ -10,7 +10,7 @@ from app.core.config import Settings, get_settings
 from app.core.database import get_db_session
 from app.core.errors import AppError
 from app.core.security import decode_access_token
-from app.models.user import User, UserStatus
+from app.models.user import RoleName, User, UserStatus
 
 
 async def get_current_user(
@@ -49,3 +49,19 @@ async def get_optional_user(
         return await get_current_user(authorization, session, settings)
     except AppError:
         return None
+
+
+def _user_has_role(user: User, role: RoleName) -> bool:
+    return any(r.name == role for r in user.roles)
+
+
+async def require_admin(user: User = Depends(get_current_user)) -> User:
+    if not _user_has_role(user, RoleName.ADMIN):
+        raise AppError("forbidden", "Admin role required", status_code=403)
+    return user
+
+
+async def require_mentor_or_admin(user: User = Depends(get_current_user)) -> User:
+    if _user_has_role(user, RoleName.MENTOR) or _user_has_role(user, RoleName.ADMIN):
+        return user
+    raise AppError("forbidden", "Mentor or admin role required", status_code=403)

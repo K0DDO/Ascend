@@ -8,7 +8,7 @@ from app.core.config import Settings, get_settings
 from app.core.database import get_engine
 from app.core.errors import register_exception_handlers
 from app.core.logging import configure_logging
-from app.core.middleware import RequestIdMiddleware
+from app.core.middleware import RateLimitMiddleware, RequestIdMiddleware, SecurityHeadersMiddleware
 
 
 @asynccontextmanager
@@ -30,6 +30,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.state.settings = cfg
 
+    app.add_middleware(SecurityHeadersMiddleware)
+    app.add_middleware(RateLimitMiddleware, limit_per_minute=cfg.rate_limit_per_minute)
     app.add_middleware(RequestIdMiddleware)
     app.add_middleware(
         CORSMiddleware,
