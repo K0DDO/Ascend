@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/ascend_theme.dart';
 import '../../../core/widgets/ascend_glass_button.dart';
@@ -53,7 +54,7 @@ class HomeScreen extends StatelessWidget {
                     AscendGlassButton(
                       label: 'Начать обучение',
                       icon: Icons.play_arrow_rounded,
-                      onPressed: () {},
+                      onPressed: () => context.go('/learn'),
                     ),
                   ],
                 ),
@@ -85,6 +86,12 @@ class HomeScreen extends StatelessWidget {
                     Text('Готовность к Mock Interview', style: text.bodyMedium),
                     SizedBox(height: theme.spacing.sm),
                     _ReadinessBar(value: 0.82),
+                    SizedBox(height: theme.spacing.md),
+                    AscendGlassButton(
+                      label: 'Запустить AI Interview',
+                      icon: Icons.record_voice_over_rounded,
+                      onPressed: () => context.push('/ai-interview'),
+                    ),
                   ],
                 ),
               ),

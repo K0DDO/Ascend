@@ -13,6 +13,7 @@ from app.main import create_app
 from app.models import content as _content_models  # noqa: F401
 from app.models import learning as _learning_models  # noqa: F401
 from app.models import srs as _srs_models  # noqa: F401
+from app.models import ai as _ai_models  # noqa: F401
 from app.models.user import Role, RoleName
 
 STUDENT_ROLE_ID = uuid.UUID("00000000-0000-4000-8000-000000000003")

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../data/models/auth_models.dart';
+import '../../data/models/ai_interview_models.dart';
 import '../../data/models/course_models.dart';
 import '../../data/models/entitlement_models.dart';
 import '../../data/models/gamification_models.dart';
@@ -194,6 +195,31 @@ class AscendApiClient {
   Future<GamificationOverview> fetchGamificationOverview() async {
     final response = await _dio.get('${ApiConfig.apiPrefix}/gamification/overview');
     return GamificationOverview.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<InterviewSession> startInterview({
+    required String topicId,
+    int questionCount = 3,
+  }) async {
+    final response = await _dio.post(
+      '${ApiConfig.apiPrefix}/ai/interviews/start',
+      data: {
+        'topic_id': topicId,
+        'question_count': questionCount,
+      },
+    );
+    return InterviewSession.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  Future<InterviewSession> answerInterview({
+    required String sessionId,
+    required String answer,
+  }) async {
+    final response = await _dio.post(
+      '${ApiConfig.apiPrefix}/ai/interviews/$sessionId/answer',
+      data: {'answer': answer},
+    );
+    return InterviewSession.fromJson(response.data as Map<String, dynamic>);
   }
 
   Future<AuthResult> _parseAuthResponse(Response<dynamic> response) async {
